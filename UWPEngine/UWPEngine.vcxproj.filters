@@ -8,17 +8,115 @@
       <UniqueIdentifier>abc39790-a8b8-4f42-856a-0858919c044f</UniqueIdentifier>
       <Extensions>bmp;fbx;gif;jpg;jpeg;tga;tiff;tif;png</Extensions>
     </Filter>
-    <Image Include="Assets\Logo.scale-100.png">
+    <Filter Include="GameEngine">
+      <UniqueIdentifier>{4d1e4bda-16e5-41cf-b26c-4c50e3e4532f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameEngine\Objects">
+      <UniqueIdentifier>{eba7f8e6-fc42-4aee-9c1f-a114b9f17187}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameEngine\Interfaces">
+      <UniqueIdentifier>{34d6d12b-4ae7-45db-9656-72d97c0a3948}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameEngine\Renderer">
+      <UniqueIdentifier>{18128ac5-7116-4b6d-bd2f-3d6c0ff83895}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameEngine\Shaders">
+      <UniqueIdentifier>{84118a76-877d-423b-8a4f-cea573410bdf}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ApplicationDefinition Include="App.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="App.xaml.cpp" />
+    <ClCompile Include="MainPage.xaml.cpp" />
+    <ClCompile Include="pch.cpp" />
+    <ClCompile Include="Engine Sources\Util.cpp">
+      <Filter>GameEngine</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine Sources\GameObject.cpp">
+      <Filter>GameEngine\Objects</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine Sources\D3DRenderer.cpp">
+      <Filter>GameEngine\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine Sources\GameWorld.cpp">
+      <Filter>GameEngine\Objects</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine Sources\CCamera.cpp">
+      <Filter>GameEngine\Objects</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine Sources\CGameEngine.cpp">
+      <Filter>GameEngine</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="pch.h" />
+    <ClInclude Include="App.xaml.h" />
+    <ClInclude Include="MainPage.xaml.h" />
+    <ClInclude Include="Engine Sources\Util.h">
+      <Filter>GameEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine Sources\GameObject.h">
+      <Filter>GameEngine\Objects</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine Sources\IDrawable.h">
+      <Filter>GameEngine\Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine Sources\D3DRenderer.h">
+      <Filter>GameEngine\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine Sources\GameWorld.h">
+      <Filter>GameEngine\Objects</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine Sources\CCamera.h">
+      <Filter>GameEngine\Objects</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine Sources\CGameEngine.h">
+      <Filter>GameEngine</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="Assets\LockScreenLogo.scale-200.png">
       <Filter>Assets</Filter>
     </Image>
-    <Image Include="Assets\SmallLogo.scale-100.png">
+    <Image Include="Assets\SplashScreen.scale-200.png">
       <Filter>Assets</Filter>
     </Image>
-    <Image Include="Assets\StoreLogo.scale-100.png">
+    <Image Include="Assets\Square150x150Logo.scale-200.png">
       <Filter>Assets</Filter>
     </Image>
-    <Image Include="Assets\SplashScreen.scale-100.png">
+    <Image Include="Assets\Square44x44Logo.scale-200.png">
       <Filter>Assets</Filter>
     </Image>
+    <Image Include="Assets\Square44x44Logo.targetsize-24_altform-unplated.png">
+      <Filter>Assets</Filter>
+    </Image>
+    <Image Include="Assets\StoreLogo.png">
+      <Filter>Assets</Filter>
+    </Image>
+    <Image Include="Assets\Wide310x150Logo.scale-200.png">
+      <Filter>Assets</Filter>
+    </Image>
+    <Image Include="Assets\box.obj">
+      <Filter>Assets</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <AppxManifest Include="Package.appxmanifest" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="UWPEngine_TemporaryKey.pfx" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Include="MainPage.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="Engine Sources\pixel.hlsl">
+      <Filter>GameEngine\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Engine Sources\vertex.hlsl">
+      <Filter>GameEngine\Shaders</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

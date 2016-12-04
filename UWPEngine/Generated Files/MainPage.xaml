@@ -8,6 +8,7 @@
     mc:Ignorable="d">
 
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
-        <SwapChainPanel Name="swapChainPanel" Margin="0,0,0,0"/>
+        <SwapChainPanel x:ConnectionId='1' Name="swapChainPanel" Margin="0,0,0,0"/>
     </Grid>
 </Page>
+
