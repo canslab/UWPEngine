@@ -7,7 +7,7 @@ using namespace DirectX;
 CGameObject::CGameObject()
 {
 	m_pVertexList = new std::vector<ModelVertex>();
-	m_pIndexList = new std::vector<ModelIndex>();
+	m_pIndexList = new std::vector<unsigned int>();
 	m_bInitialized = false;
 	m_nCurrentCount = 0;
 	m_transform = { 0,0,0,1,1,1 };
@@ -22,27 +22,7 @@ CGameObject::~CGameObject()
 	m_bInitialized = false;
 }
 
-bool CGameObject::GetNextVertex(float * resultX, float * resultY, float * resultZ)
-{
-	assert(resultX != nullptr && resultY != nullptr && resultZ != nullptr);
-	assert(m_pVertexList != nullptr);
-
-	if (m_nCurrentCount < (m_pVertexList->size()))
-	{
-		*resultX = m_pVertexList->at(m_nCurrentCount).x;
-		*resultY = m_pVertexList->at(m_nCurrentCount).y;
-		*resultZ = m_pVertexList->at(m_nCurrentCount).z;
-
-		m_nCurrentCount++;
-		return true;
-	}
-	else
-	{
-		m_nCurrentCount = 0;
-		return false;
-	}
-}
-
+	
 unsigned int CGameObject::GetVertexByteSize() const
 {
 	return sizeof(ModelVertex);
@@ -63,9 +43,14 @@ void * CGameObject::GetAddressOfVertexArray() const
 
 unsigned int CGameObject::GetIndexCount() const
 {
-	int retValue = m_pIndexList->size() * (sizeof(ModelIndex) / sizeof(UINT));
+	int retValue = m_pIndexList->size();
 
 	return retValue;
+}
+
+unsigned int CGameObject::GetIndexByteSize() const
+{
+	return sizeof(UINT);
 }
 
 void * CGameObject::GetAddressOfIndexArray() const
@@ -114,7 +99,9 @@ bool CGameObject::Initialize(const string& meshFileName)
 					lineStream >> vertexIndex3 >> ignore;
 					lineStream >> carriageReturn;
 
-					m_pIndexList->push_back({ vertexIndex1 - 1, vertexIndex2 - 1, vertexIndex3 - 1 });
+					m_pIndexList->push_back(vertexIndex1 - 1);
+					m_pIndexList->push_back(vertexIndex2 - 1);
+					m_pIndexList->push_back(vertexIndex3 - 1);
 				}
 
 				else
@@ -169,12 +156,18 @@ XMFLOAT3 CGameObject::GetScale() const
 	return XMFLOAT3(m_transform.xScale, m_transform.yScale, m_transform.zScale);
 }
 
-XMMATRIX CGameObject::GetWorldMatrix() const
+XMFLOAT4X4 CGameObject::GetWorldMatrix() const
 {
 	assert(m_bInitialized == true);
+
+	XMFLOAT4X4 retMatrix;
+
 	auto scalingMatrix = XMMatrixScaling(m_transform.xScale, m_transform.yScale, m_transform.zScale);
-	// auto rotationMatrix;
+	// rotating matrix should be inserted here!
 	auto translationMatrix = XMMatrixTranslation(m_transform.x, m_transform.y, m_transform.z);
 
-	return scalingMatrix * translationMatrix;
+	auto resultWorldMatrix = scalingMatrix * translationMatrix;
+	XMStoreFloat4x4(&retMatrix, resultWorldMatrix);
+	
+	return retMatrix;
 }

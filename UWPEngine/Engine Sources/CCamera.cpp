@@ -81,11 +81,14 @@ void CCamera::MovePositionByOffsetZ(float dz)
 	m_positionW.z += dz;
 }
 
-XMMATRIX CCamera::GetViewMatrix() const
+XMFLOAT4X4 CCamera::GetViewMatrix() const
 {
+	XMFLOAT4X4 retMatrix;
 	auto pos = XMLoadFloat4(&m_positionW);
 	auto target = XMLoadFloat4(&m_targetW);
 	auto up = XMLoadFloat4(&m_upW);
 
-	return XMMatrixLookAtLH(pos, target, up);
+	XMStoreFloat4x4(&retMatrix, XMMatrixLookAtLH(pos, target, up));
+	
+	return retMatrix;
 }

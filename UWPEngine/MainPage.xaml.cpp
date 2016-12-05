@@ -35,24 +35,55 @@ MainPage::MainPage()
 	coreWindow->PointerReleased += ref new Windows::Foundation::TypedEventHandler<Windows::UI::Core::CoreWindow ^, Windows::UI::Core::PointerEventArgs ^>(this, &UWPEngine::MainPage::OnPointerReleased);
 	m_pEngine = CGameEngine::GetSharedEngine();
 
+
+#ifdef ARM_ARCH
+	auto statusBar = Windows::UI::ViewManagement::StatusBar::GetForCurrentView();
+	statusBar->HideAsync();
+#endif
+	m_bPressed = false;
+
 	auto bInitResult = m_pEngine->Initialize(swapChainPanel);
 	if (bInitResult == false)
 	{
 		// 사용자에게 잘못되었다고 알려준다.
 	}
 
-	m_pObject = new CGameObject();
-	bInitResult = m_pObject->Initialize("./Assets/box.obj");
+	// 오브젝트 2개를 만든다.. 
+	m_pObject1 = new CGameObject();
+	bInitResult = m_pObject1->Initialize("./Assets/box.obj");
 	if (bInitResult)
 	{
 		// Asset에서 불러오는 데 실패했다는 이야기.
 	}
 
-	m_pCamera = new CCamera();
-	m_pCamera->Initialize({ 0,0,-5,1 }, { 0,0,-4,1 }, { 0,1,0,0 });
-	
-	m_pEngine->AddObject(m_pObject);
-	m_pEngine->AddCamera(m_pCamera);
+	m_pObject2 = new CGameObject();
+	bInitResult = m_pObject2->Initialize("./Assets/box.obj");
+	if (bInitResult)
+	{
+		// Asset에서 불러오는 데 실패했다는 이야기.
+	}
+	m_pObject2->SetPositionW({ 0,0.5,0,1 });
+
+	// 월드를 만든다
+	CGameWorld *pMyWorld = new CGameWorld();
+	if (pMyWorld->Initialize())
+	{
+		// world 초기화 실패
+	}
+
+	// 월드에 오브젝트 두 개를 추가한다.
+	pMyWorld->AddObject(m_pObject1);
+	pMyWorld->AddObject(m_pObject2);
+
+	// 카메라 위치, 타깃, 업 벡터를 만들고, 월드 카메라에 설정한다.
+	float cameraPosition[] = { 0,0,-5 };
+	float cameraTargetPos[] = { 0,0,0 };
+	float cameraUpVector[] = { 0,1,0 };
+
+	pMyWorld->SetCameraPositionTo(cameraPosition, cameraTargetPos, cameraUpVector);
+
+	// 엔진에 월드를 추가 한다.
+	m_pEngine->AddWorld(pMyWorld);
 	
 	EventHandler<Object^>^ ev = ref new EventHandler<Object^>(this, &MainPage::OnUpdate);
 	CompositionTarget::Rendering += ev;
@@ -86,10 +117,24 @@ void UWPEngine::MainPage::OnSwapChainCompositionScaleChanged(Windows::UI::Xaml::
 
 void UWPEngine::MainPage::OnPointerPressed(Windows::UI::Core::CoreWindow ^ coreWindow, Windows::UI::Core::PointerEventArgs ^ args)
 {
+	static float curXPos = 0.0f;
+	auto curPosition = args->CurrentPoint->Position;
+	if (curPosition.X < (swapChainPanel->ActualWidth / 2))
+	{
+		curXPos -= 0.1f;
+	}
+	else
+	{
+		curXPos += 0.1f;
+	}
+	m_pObject1->SetPositionW({ curXPos, 0, 0, 1 });
+	m_bPressed = true;
 }
 
 void UWPEngine::MainPage::OnPointerMoved(Windows::UI::Core::CoreWindow ^ coreWindow, Windows::UI::Core::PointerEventArgs ^ args)
 {
+	
+
 }
 
 void UWPEngine::MainPage::

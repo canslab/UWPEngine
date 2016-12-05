@@ -149,7 +149,7 @@ bool CD3DRenderer::CreateD3D()
 
 		if (adapterDesc.VendorId == JHUtil::VENDOR_ID_QUALCOMM
 			|| adapterDesc.VendorId == JHUtil::VENDOR_ID_NVIDIA
-			|| adapterDesc.VendorId == JHUtil::VENDOR_ID_AMD )
+			|| adapterDesc.VendorId == JHUtil::VENDOR_ID_AMD)
 		{
 			break;
 		}
@@ -301,7 +301,7 @@ bool CD3DRenderer::CreateSwapChain(Windows::UI::Xaml::Controls::SwapChainPanel ^
 			__debugbreak();
 			return false;
 		}
-		
+
 		// map created SwapChain(m_pSwapChain) to swapChainPanel(XAML controls)
 		reinterpret_cast<IUnknown*>(swapChainPanel)->QueryInterface(__uuidof(ISwapChainPanelNative), (void**)&m_pSwapChainPanelNative);
 		hr = m_pSwapChainPanelNative->SetSwapChain(m_pSwapChain.Get());
@@ -522,17 +522,17 @@ bool CD3DRenderer::CreateVertexBuffer(const IDrawable& object)
 	D3D11_BUFFER_DESC vertexBufferDesc = { 0 };
 
 	// byte width means the size of vertex buffer
-	vertexBufferDesc.ByteWidth = object.GetVertexByteSize() * object.GetVertexCount();
+	vertexBufferDesc.ByteWidth = object.GetTotalVertexBufferSizeInByte();
 	vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	vertexBufferDesc.CPUAccessFlags = 0;
 	vertexBufferDesc.MiscFlags = 0;
 	vertexBufferDesc.Usage = D3D11_USAGE_IMMUTABLE;
 	vertexBufferDesc.StructureByteStride = 0;
 
-	void *pVertexData = object.GetAddressOfVertexArray();
+	const void *pVertexData = object.GetContVertexArray();
 
 	D3D11_SUBRESOURCE_DATA srd = { pVertexData, 0, 0 };
-	
+
 	hr = m_pDevice->CreateBuffer(&vertexBufferDesc, &srd, &m_pVertexBuffer);
 	if (FAILED(hr))
 	{
@@ -554,9 +554,9 @@ bool CD3DRenderer::CreateIndexBuffer(const IDrawable & object)
 	indexBufferDesc.Usage = D3D11_USAGE_IMMUTABLE;
 	indexBufferDesc.StructureByteStride = 0;
 
-	void *pIndexData = object.GetAddressOfIndexArray();
+	const void *pIndexData = object.GetContIndexArray();
 	D3D11_SUBRESOURCE_DATA srd = { pIndexData, 0, 0 };
-	
+
 	hr = m_pDevice->CreateBuffer(&indexBufferDesc, &srd, &m_pIndexBuffer);
 	if (FAILED(hr))
 	{
@@ -680,7 +680,7 @@ bool CD3DRenderer::UpdateForWindowSizeOrScaleChanged(const Windows::Foundation::
 	DirectX::XMMATRIX p = DirectX::XMMatrixPerspectiveFovLH(0.25 * DirectX::XM_PI, ratio, 1.0f, 1000.0f);
 	DirectX::XMStoreFloat4x4(&m_projMatrix, p);
 
-	SetCompositionScale(m_compositionScaleX, m_compositionScaleY);	
+	SetCompositionScale(m_compositionScaleX, m_compositionScaleY);
 
 	return true;
 }
@@ -732,29 +732,15 @@ void CD3DRenderer::Draw()
 	m_pDeviceContext->Draw(3, 0);
 }
 
-void CD3DRenderer::Draw(const IDrawable & drawableObject, DirectX::XMFLOAT4X4 cameraMatrix)
+void CD3DRenderer::Draw(const IDrawable & drawableObject)
 {
 	assert(m_bInitialized == true);
 	CreateVertexBuffer(drawableObject);
 	CreateIndexBuffer(drawableObject);
-	
-	UINT stride = drawableObject.GetVertexByteSize();
+
+	UINT stride = drawableObject.GetVertexStride();
 	UINT offset = 0;
 
-	m_pDeviceContext->IASetInputLayout(m_pVertexInputLayout.Get());
-	m_pDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	m_pDeviceContext->IASetVertexBuffers(0, 1, m_pVertexBuffer.GetAddressOf(), &stride, &offset);
-	m_pDeviceContext->IASetIndexBuffer(m_pIndexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
-
-	m_pDeviceContext->VSSetShader(m_pVertexShader.Get(), nullptr, 0);
-	m_pDeviceContext->VSSetConstantBuffers(0, 1, m_pConstantBuffer.GetAddressOf());
-	m_pDeviceContext->PSSetShader(m_pPixelShader.Get(), nullptr, 0);
-
-	auto tempWorldMatrix = drawableObject.GetWorldMatrix();
-	auto tempCameraMatrix = DirectX::XMLoadFloat4x4(&cameraMatrix);
-	auto tempProjMatrix = DirectX::XMLoadFloat4x4(&m_projMatrix);
-	auto resultMat = tempWorldMatrix * tempCameraMatrix * tempProjMatrix;
-	
 	struct CIBAL
 	{
 		float worldMatrix[4][4];
@@ -762,13 +748,37 @@ void CD3DRenderer::Draw(const IDrawable & drawableObject, DirectX::XMFLOAT4X4 ca
 		float projMatrix[4][4];
 	};
 
-	CIBAL ooo;
-	memcpy(ooo.worldMatrix, &tempWorldMatrix, sizeof(float) * 16);
-	memcpy(ooo.viewMatrix, &tempCameraMatrix, sizeof(float) * 16);
-	memcpy(ooo.projMatrix, &tempProjMatrix, sizeof(float) * 16);
+	{
+		m_pDeviceContext->IASetInputLayout(m_pVertexInputLayout.Get());
+		m_pDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		m_pDeviceContext->IASetVertexBuffers(0, 1, m_pVertexBuffer.GetAddressOf(), &stride, &offset);
+		m_pDeviceContext->IASetIndexBuffer(m_pIndexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
 
-	m_pDeviceContext->UpdateSubresource(m_pConstantBuffer.Get(), 0, nullptr, &ooo, 0, 0);
-	m_pDeviceContext->DrawIndexed(drawableObject.GetIndexCount(), 0, 0);
+		m_pDeviceContext->VSSetShader(m_pVertexShader.Get(), nullptr, 0);
+		m_pDeviceContext->VSSetConstantBuffers(0, 1, m_pConstantBuffer.GetAddressOf());
+		m_pDeviceContext->PSSetShader(m_pPixelShader.Get(), nullptr, 0);
+
+	}
+
+	auto worldMatrices = drawableObject.GetWorldMatrices();
+	auto cameraMatrix = drawableObject.GetCameraMatrix();
+	auto indiciesInVertexBuffer = drawableObject.GetIndicesOfVertexBuffer();
+	auto indiciesInIndexBuffer = drawableObject.GetIndicesOfIndexBuffer();
+
+	for (auto i = 0; i < drawableObject.GetNumberOfDrawableObject(); ++i)
+	{
+		CIBAL ooo;
+		auto curObjectStartIndexLocation = indiciesInIndexBuffer->at(i);
+		auto curObjectBaseVertexLocation = indiciesInVertexBuffer->at(i);
+		auto curObjectIndexCount = indiciesInIndexBuffer->at(i + 1) - indiciesInIndexBuffer->at(i);
+			
+		memcpy(ooo.worldMatrix, &worldMatrices[i], sizeof(float) * 16);
+		memcpy(ooo.viewMatrix, &cameraMatrix, sizeof(float) * 16);
+		memcpy(ooo.projMatrix, &m_projMatrix, sizeof(float) * 16);
+		m_pDeviceContext->UpdateSubresource(m_pConstantBuffer.Get(), 0, nullptr, &ooo, 0, 0);
+
+		m_pDeviceContext->DrawIndexed(curObjectIndexCount, curObjectStartIndexLocation, curObjectBaseVertexLocation);
+	}
 }
 
 void CD3DRenderer::EndDraw() const

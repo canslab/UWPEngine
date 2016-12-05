@@ -7,27 +7,25 @@ class CCamera;
 class CGameWorld : public IDrawable
 {
 public:
-	bool Initialize(CCamera *pMainCamera);
-	bool IsInitialized() const;
+	bool Initialize();
 	bool AddObject(CGameObject* pDrawableObject);
-	bool AddCamera(CCamera* pCamera);
-	bool ChangeMainCameraTo(unsigned int index);
-	
-	const std::vector<CGameObject*>* GetGameObjectList() const;
-	const CCamera* GetMainCamera() const;
-	bool CopyTo(CGameWorld& target) const;
+	void SetCameraPositionTo(const float positionW[3], const float targetPositionW[3], const float upVectorW[3]);
 
-	// ICompositeDrawable Implementation
-	virtual int										GetNumberOfDrawableObject() const;
-	virtual std::vector<unsigned int>				GetIndexesOfVertexBuffer() const;
-	virtual std::vector<unsigned int>				GetIndexesOfIndexBuffer() const;
+	const std::vector<CGameObject*>* GetGameObjectList() const;
+	const CCamera* GetCamera() const;
 
 	// IDrawable Implementation
-	virtual unsigned int							GetVertexByteSize() const;
-	virtual unsigned int							GetVertexCount() const;
-	virtual void*									GetAddressOfVertexArray() const;
+	virtual unsigned int							GetNumberOfDrawableObject() const;
+	virtual const void*								GetContVertexArray() const;
+	virtual const void*								GetContIndexArray() const;
 	virtual unsigned int							GetIndexCount() const;
-	virtual void*									GetAddressOfIndexArray() const;
+	virtual const std::vector<unsigned int>*		GetIndicesOfVertexBuffer() const;
+	virtual const std::vector<unsigned int>*		GetIndicesOfIndexBuffer() const;
+	virtual unsigned int 							GetTotalVertexBufferSizeInByte() const;
+	virtual unsigned int							GetTotalIndexBufferSizeInByte() const;
+	virtual unsigned int							GetVertexStride() const;
+	virtual std::vector<DirectX::XMFLOAT4X4>		GetWorldMatrices() const;
+	virtual DirectX::XMFLOAT4X4						GetCameraMatrix() const;
 
 public:
 	CGameWorld();
@@ -37,14 +35,18 @@ public:
 	CGameWorld&	operator=(const CGameWorld&) = delete;
 
 protected:
-	void _ReleaseCameraListAndResetMainCamera();
 	void _ReleaseObjectList();
 
 protected:
-	const CCamera*				m_pMainCamera;
-
-	std::vector<CCamera*>*		m_pCameraList;
-	std::vector<CGameObject*>*	m_pObjectList;
+	CCamera						m_camera;
+	std::vector<CGameObject*>	m_objectList;
 	bool						m_bInitialized;
+
+	std::vector<unsigned char>	m_globalVertexBufferInSystemMemory;
+	std::vector<unsigned char>	m_globalIndexBufferInSystemMemory;
+	std::vector<unsigned int>	m_indicesOfGlobalVertexBuffer;
+	std::vector<unsigned int>	m_indicesOfGlobalIndexBuffer;
+
+	unsigned int				m_totalIndexCount;
 };
 

@@ -2,6 +2,7 @@
 #include "D3DRenderer.h"
 #include "CCamera.h"
 #include "GameObject.h"
+#include "GameWorld.h"
 
 class CGameEngine
 {
@@ -12,9 +13,8 @@ public:
 	void UpdateForWindowSizeOrScaleChanged(const Windows::Foundation::Size *pNewLogicalSize, float fCompositionScaleX, float fCompositionScaleY);
 
 	void Process() const;
-	void AddObject(CGameObject* object);
-	void AddCamera(CCamera *camera);
-	
+	void AddWorld(CGameWorld *pWorld);
+
 	virtual ~CGameEngine();
 
 	// Prohibite Copy, Assignment
@@ -26,8 +26,7 @@ private:
 
 private:
 	CD3DRenderer*					m_pRenderer;
-	std::vector<CCamera*>*			m_pCameraList;
-	std::vector<CGameObject*>*		m_pObjectList;
+	CGameWorld*						m_pGameWorld;
 };
 
 

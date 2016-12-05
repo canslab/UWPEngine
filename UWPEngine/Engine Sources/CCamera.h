@@ -27,7 +27,7 @@ public:
 	void MovePositionByOffsetY(float dy);
 	void MovePositionByOffsetZ(float dz);
 	
-	DirectX::XMMATRIX GetViewMatrix() const;
+	DirectX::XMFLOAT4X4 GetViewMatrix() const;
 
 public:
 	virtual ~CCamera();

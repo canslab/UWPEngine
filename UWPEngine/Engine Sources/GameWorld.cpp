@@ -4,64 +4,34 @@
 #include "CCamera.h"
 
 using namespace std;
+using namespace DirectX;
 
 CGameWorld::CGameWorld() :
-	m_pMainCamera(nullptr),
-	m_pCameraList(nullptr),
-	m_pObjectList(nullptr),
-	m_bInitialized(false)
+	m_camera(),
+	m_objectList(0),
+	m_globalVertexBufferInSystemMemory(0),
+	m_globalIndexBufferInSystemMemory(0),
+	m_indicesOfGlobalVertexBuffer(0),
+	m_indicesOfGlobalIndexBuffer(0),
+	m_bInitialized(false),
+	m_totalIndexCount(0)
 {
 
-}
+}	
 
 CGameWorld::~CGameWorld()
 {
-	_ReleaseCameraListAndResetMainCamera();
 	_ReleaseObjectList();
-	m_pMainCamera = nullptr;
-	m_bInitialized = false;
 }
 
-bool CGameWorld::Initialize(CCamera *pMainCamera)
+bool CGameWorld::Initialize()
 {
-	assert(m_bInitialized == false && pMainCamera != nullptr && pMainCamera->IsInitialized());
+	assert(m_bInitialized == false);
+	m_bInitialized = m_camera.Initialize({ 0,0,0 ,1 }, { 0,0,0,1 }, { 0,1,0,0 });
 
-	if (m_bInitialized == true)
-	{
-		return false;
-	}
+	m_indicesOfGlobalIndexBuffer.push_back(0);
+	m_indicesOfGlobalVertexBuffer.push_back(0);
 
-	m_pCameraList = new vector<CCamera*>();
-	if (m_pCameraList == nullptr)
-	{
-		__debugbreak();
-		m_bInitialized = false;
-		return false;
-	}
-
-	m_pObjectList = new vector<CGameObject*>();
-	if (m_pObjectList == nullptr)
-	{
-		__debugbreak();
-		m_bInitialized = false;
-		_ReleaseCameraListAndResetMainCamera();
-		return false;
-	}
-
-	// add at least one camera, it is set to the main camera by default.
-	m_pCameraList->push_back(pMainCamera);
-	m_pCameraList->shrink_to_fit();
-	m_pMainCamera = pMainCamera;
-
-	// initialized well means allocation of the camera list and the object list is done successfully
-	// also main camera is set.
-	m_bInitialized = true;
-
-	return true;
-}
-
-bool CGameWorld::IsInitialized() const
-{
 	return m_bInitialized;
 }
 
@@ -69,222 +39,149 @@ bool CGameWorld::AddObject(CGameObject * pGameObject)
 {
 	assert(m_bInitialized == true && pGameObject != nullptr && pGameObject->IsInitalized() == true);
 
+	static unsigned int currentIndiciesOfVertexBuffer = 0;
+	static unsigned int currentIndiciesOfIndexBuffer = 0;
+
 	if (m_bInitialized == false || pGameObject == nullptr || pGameObject->IsInitalized() == false)
 	{
 		return false;
 	}
 
-	m_pObjectList->push_back(pGameObject);
+	m_objectList.push_back(pGameObject);
+	// make ensure that the size of m_objectList is equal to the size of game object.
+	m_objectList.shrink_to_fit();
+
+	auto addedObjectVertexBufferSizeInByte = pGameObject->GetVertexCount() * pGameObject->GetVertexByteSize();
+	auto addedObjectIndexBufferSizeInByte = pGameObject->GetIndexCount() * pGameObject->GetIndexByteSize();
+		
+	m_totalIndexCount += pGameObject->GetIndexCount();
+
+	currentIndiciesOfVertexBuffer += pGameObject->GetVertexCount();
+	currentIndiciesOfIndexBuffer += pGameObject->GetIndexCount();
+
+	m_indicesOfGlobalVertexBuffer.push_back(currentIndiciesOfVertexBuffer);
+	m_indicesOfGlobalIndexBuffer.push_back(currentIndiciesOfIndexBuffer);
+	m_indicesOfGlobalVertexBuffer.shrink_to_fit();
+	m_indicesOfGlobalIndexBuffer.shrink_to_fit();
+
+	m_globalVertexBufferInSystemMemory.resize(m_globalVertexBufferInSystemMemory.size() + addedObjectVertexBufferSizeInByte);
+	m_globalIndexBufferInSystemMemory.resize(m_globalIndexBufferInSystemMemory.size() + addedObjectIndexBufferSizeInByte);
+	
+	// copy to CGameWorld's internal memory
+	memcpy(&(m_globalVertexBufferInSystemMemory[m_globalVertexBufferInSystemMemory.size() - addedObjectVertexBufferSizeInByte]), pGameObject->GetAddressOfVertexArray(), addedObjectVertexBufferSizeInByte);
+	memcpy(&(m_globalIndexBufferInSystemMemory[m_globalIndexBufferInSystemMemory.size() - addedObjectIndexBufferSizeInByte]), pGameObject->GetAddressOfIndexArray(), addedObjectIndexBufferSizeInByte);
+
 	return true;
 }
 
-bool CGameWorld::AddCamera(CCamera *pCamera)
+void CGameWorld::SetCameraPositionTo(const float positionW[3], const float targetPositionW[3], const float upVectorW[3])
 {
-	assert(m_bInitialized == true && pCamera != nullptr && pCamera->IsInitialized() == true);
-	if (m_bInitialized == false || pCamera == nullptr || pCamera->IsInitialized() == false)
-	{
-		return false;
-	}
+	assert(m_bInitialized == true && positionW != nullptr && targetPositionW != nullptr && upVectorW != nullptr);
 
-	m_pCameraList->push_back(pCamera);
-	return true;
-}
-
-bool CGameWorld::ChangeMainCameraTo(unsigned int index)
-{
-	assert(m_bInitialized == true && 0 <= index && index < m_pCameraList->size());
-
-	if (m_bInitialized == false || index >= m_pCameraList->size() || index < 0)
-	{
-		return false;
-	}
-
-	m_pMainCamera = m_pCameraList->at(index);
-
-	return true;
+	m_camera.SetPositionW(positionW[0], positionW[1], positionW[2]);
+	m_camera.SetTargetPositionW(targetPositionW[0], targetPositionW[1], targetPositionW[2]);
+	m_camera.SetUpVectorW(upVectorW[0], upVectorW[1], upVectorW[2]);
 }
 
 const std::vector<CGameObject*>* CGameWorld::GetGameObjectList() const
 {
 	assert(m_bInitialized == true);
-	return m_pObjectList;
+	return &m_objectList;
 }
 
-const CCamera* CGameWorld::GetMainCamera() const
+const CCamera* CGameWorld::GetCamera() const
 {
 	assert(m_bInitialized == true);
-	return m_pMainCamera;
+	return &m_camera;
 }
 
-bool CGameWorld::CopyTo(CGameWorld & target) const
+unsigned int CGameWorld::GetNumberOfDrawableObject() const
 {
-	//not yet implemented
-	return false;
+	assert(m_bInitialized == true);
+	return m_objectList.size();
 }
 
-int CGameWorld::GetNumberOfDrawableObject() const
+const std::vector<unsigned int>* CGameWorld::GetIndicesOfVertexBuffer() const
 {
-	assert(m_pObjectList != nullptr);
-	return this->m_pObjectList->size();
+	assert(m_bInitialized == true);
+	return &m_indicesOfGlobalVertexBuffer;
 }
 
-std::vector<unsigned int> CGameWorld::GetIndexesOfVertexBuffer() const
+const std::vector<unsigned int>* CGameWorld::GetIndicesOfIndexBuffer() const
 {
-	std::vector<unsigned int> retVector;
-	unsigned int acc = 0;
-
-	retVector.push_back(0);
-	for (auto eachObject : *m_pObjectList)
-	{
-		auto eachObjectVertexCount = eachObject->GetVertexCount();
-		retVector.push_back(acc + eachObjectVertexCount);
-		acc += eachObjectVertexCount;
-	}
-
-	// for example, in world, there is a only single object which consist of 12 vertices.
-	// then retVector = { 12 }
-
-	return retVector;
+	assert(m_bInitialized == true);
+	return &m_indicesOfGlobalIndexBuffer;
 }
 
-std::vector<unsigned int> CGameWorld::GetIndexesOfIndexBuffer() const
+const void* CGameWorld::GetContVertexArray() const
 {
-	std::vector<unsigned int> retVector;
-	unsigned int acc = 0;
-
-	retVector.push_back(0);
-	for (auto eachObject : *m_pObjectList)
-	{
-		auto eachObjectIndexCount = eachObject->GetIndexCount();
-		retVector.push_back(acc + eachObjectIndexCount);
-		acc += eachObjectIndexCount;
-	}
-
-	// for example, in world, there is a only single object which consist of 12 indices.
-	// then retVector = { 12 }
-
-	return retVector;
+	assert(m_bInitialized == true);
+	assert(m_globalVertexBufferInSystemMemory.size() >= 1);
+	
+	return &(m_globalVertexBufferInSystemMemory[0]);
 }
 
-unsigned int CGameWorld::GetVertexByteSize() const
+const void* CGameWorld::GetContIndexArray() const
 {
-	return m_pObjectList->at(0)->GetVertexByteSize();
-}
+	assert(m_bInitialized == true);
+	assert(m_globalIndexBufferInSystemMemory.size() >= 1);
 
-unsigned int CGameWorld::GetVertexCount() const
-{
-	unsigned int nVertexCount = 0;
-
-	for (auto eachObject : *m_pObjectList)
-	{
-		auto eachObjectVertexCount = eachObject->GetVertexCount();
-		nVertexCount += eachObjectVertexCount;
-	}
-	return nVertexCount;
-}
-
-void* CGameWorld::GetAddressOfVertexArray() const
-{
-	// for example 
-	// object1 
-	// # of vertex = 6
-	// each vertex byte size = 10
-	// total 60 bytes
-	/*unique_ptr<vector<char>> pRet(new vector<char>());
-	unsigned int acc = 0;
-
-	for (auto pEachObject : *m_pObjectList)
-	{
-		unsigned int nEachVertexCount = 0;
-		unsigned int nEachVertexByteSize = 0;
-		unsigned int addedSize = 0;
-		unique_ptr<vector<char>> pTempVertexArray;
-
-		pTempVertexArray = pEachObject->GetAddressOfVertexArray();
-		nEachVertexCount = pEachObject->GetVertexCount();
-		nEachVertexByteSize = pEachObject->GetVertexByteSize();
-		addedSize = sizeof(char) * nEachVertexByteSize * nEachVertexCount;
-
-		pRet->resize(acc + addedSize);
-		memcpy(&(pRet->at(acc)), &(pTempVertexArray->at(0)), addedSize);
-		acc += addedSize;
-	}
-
-	return pRet;*/
-	return nullptr;
+	return &(m_globalIndexBufferInSystemMemory[0]);
 }
 
 unsigned int CGameWorld::GetIndexCount() const
 {
-	unsigned int nIndexCount = 0;
-
-	for (auto eachObject : *m_pObjectList)
-	{
-		auto eachObjectIndexCount = eachObject->GetIndexCount();
-		nIndexCount += eachObjectIndexCount;
-	}
-	return nIndexCount;
+	assert(m_bInitialized == true);
+	return m_totalIndexCount;
 }
 
-void* CGameWorld::GetAddressOfIndexArray() const
+unsigned int CGameWorld::GetTotalVertexBufferSizeInByte() const
 {
-	// for example 
-	// object1 
-	// # of vertex = 6
-	// each vertex byte size = 10
-	// total 60 bytes
-	/*unique_ptr<vector<char>> pRet(new vector<char>());
-	unsigned int acc = 0;
-
-	for (auto pEachObject : *m_pObjectList)
-	{
-		unsigned int nEachVertexCount = 0;
-		unsigned int nEachVertexByteSize = 0;
-		unsigned int addedSize = 0;
-		unique_ptr<vector<char>> pTempIndexArray;
-
-		pTempIndexArray = pEachObject->GetAddressOfIndexArray();
-		addedSize = sizeof(UINT) * pEachObject->GetIndexCount();
-
-		pRet->resize(acc + addedSize);
-		memcpy(&(pRet->at(acc)), &(pTempIndexArray->at(0)), addedSize);
-		acc += addedSize;
-	}
-*/
-	return nullptr;
+	assert(m_bInitialized == true);
+	return m_globalVertexBufferInSystemMemory.size();
 }
 
-void CGameWorld::_ReleaseCameraListAndResetMainCamera()
+unsigned int CGameWorld::GetTotalIndexBufferSizeInByte() const
 {
-	if (m_pCameraList)
+	assert(m_bInitialized == true);
+	return m_globalIndexBufferInSystemMemory.size();
+}
+
+unsigned int CGameWorld::GetVertexStride() const
+{
+	return sizeof(CGameObject::ModelVertex);
+}
+
+vector<XMFLOAT4X4> CGameWorld::GetWorldMatrices() const
+{
+	vector<XMFLOAT4X4> retMatrices;
+	for (auto pEachObject : m_objectList)
 	{
-		for (auto pEachCameraObject : *m_pCameraList)
-		{
-			if (pEachCameraObject)
-			{
-				delete pEachCameraObject;
-			}
-		}
-		delete m_pCameraList;
+		auto eachWorldMatrix = pEachObject->GetWorldMatrix();
+
+		retMatrices.push_back(eachWorldMatrix);
 	}
 
-	m_pCameraList = nullptr;
-	m_pMainCamera = nullptr;
+	return retMatrices;
 }
+
+DirectX::XMFLOAT4X4 CGameWorld::GetCameraMatrix() const
+{
+	assert(m_bInitialized == true);
+	return m_camera.GetViewMatrix();
+}
+
 
 void CGameWorld::_ReleaseObjectList()
 {
-	if (m_pObjectList)
-	{
-		for (auto pEachObject : *m_pObjectList)
-		{
-			if (pEachObject)
-			{
-				delete pEachObject;
-			}
-		}
-		delete m_pObjectList;
-	}
+	assert(m_bInitialized == true);
 
-	m_pObjectList = nullptr;
+	for (auto pEachObject : m_objectList)
+	{
+		if (pEachObject)
+		{
+			delete pEachObject;
+		}
+	}
+	m_objectList.clear();
 }

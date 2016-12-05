@@ -10,7 +10,7 @@ public:
 	bool UpdateForWindowSizeOrScaleChanged(const Windows::Foundation::Size *newSize, float xScale, float yScale);
 	void BeginDraw();
 	void Draw();
-	void Draw(const IDrawable& drawableObject, DirectX::XMFLOAT4X4 cameraMatrix);
+	void Draw(const IDrawable& drawableObject);
 	void EndDraw() const;
 	void Present();
 

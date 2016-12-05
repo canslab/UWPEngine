@@ -27,7 +27,9 @@ namespace UWPEngine
 	
 	private:
 		CGameEngine *m_pEngine;
-		CGameObject *m_pObject;
-		CCamera *m_pCamera;
+		CGameObject *m_pObject1;
+		CGameObject *m_pObject2;
+
+		bool m_bPressed;
 	};
 }
