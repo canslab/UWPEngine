@@ -765,12 +765,12 @@ void CD3DRenderer::Draw(const IDrawable & drawableObject)
 	auto indiciesInVertexBuffer = drawableObject.GetIndicesOfVertexBuffer();
 	auto indiciesInIndexBuffer = drawableObject.GetIndicesOfIndexBuffer();
 
-	for (auto i = 0; i < drawableObject.GetNumberOfDrawableObject(); ++i)
+	for (unsigned int i = 0; i < drawableObject.GetNumberOfDrawableObject(); ++i)
 	{
 		CIBAL ooo;
-		auto curObjectStartIndexLocation = indiciesInIndexBuffer->at(i);
-		auto curObjectBaseVertexLocation = indiciesInVertexBuffer->at(i);
-		auto curObjectIndexCount = indiciesInIndexBuffer->at(i + 1) - indiciesInIndexBuffer->at(i);
+		auto curObjectStartIndexLocation = indiciesInIndexBuffer[i];
+		auto curObjectBaseVertexLocation = indiciesInVertexBuffer[i];
+		auto curObjectIndexCount = indiciesInIndexBuffer[i+1] - indiciesInIndexBuffer[i];
 			
 		memcpy(ooo.worldMatrix, &worldMatrices[i], sizeof(float) * 16);
 		memcpy(ooo.viewMatrix, &cameraMatrix, sizeof(float) * 16);

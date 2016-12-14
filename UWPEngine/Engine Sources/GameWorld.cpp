@@ -9,18 +9,20 @@ using namespace DirectX;
 CGameWorld::CGameWorld() :
 	m_camera(),
 	m_objectList(0),
+	m_objectWorldMatrices(0),
+	m_bInitialized(false),
 	m_globalVertexBufferInSystemMemory(0),
 	m_globalIndexBufferInSystemMemory(0),
 	m_indicesOfGlobalVertexBuffer(0),
 	m_indicesOfGlobalIndexBuffer(0),
-	m_bInitialized(false),
-	m_totalIndexCount(0)
+	m_nIndexCount(0)
 {
 
 }	
 
 CGameWorld::~CGameWorld()
 {
+	// release all objects in m_objectList
 	_ReleaseObjectList();
 }
 
@@ -31,7 +33,6 @@ bool CGameWorld::Initialize()
 
 	m_indicesOfGlobalIndexBuffer.push_back(0);
 	m_indicesOfGlobalVertexBuffer.push_back(0);
-
 	return m_bInitialized;
 }
 
@@ -39,60 +40,59 @@ bool CGameWorld::AddObject(CGameObject * pGameObject)
 {
 	assert(m_bInitialized == true && pGameObject != nullptr && pGameObject->IsInitalized() == true);
 
-	static unsigned int currentIndiciesOfVertexBuffer = 0;
-	static unsigned int currentIndiciesOfIndexBuffer = 0;
-
 	if (m_bInitialized == false || pGameObject == nullptr || pGameObject->IsInitalized() == false)
 	{
+		// exceptional case 
 		return false;
 	}
 
+	auto gameObjectVertexCount = pGameObject->GetVertexCount();
+	auto gameObjectIndexCount = pGameObject->GetIndexCount();
+	auto addedObjectVertexBufferSizeInByte = gameObjectVertexCount * pGameObject->GetVertexByteSize();
+	auto addedObjectIndexBufferSizeInByte = gameObjectIndexCount * pGameObject->GetIndexByteSize();
+	
+	// refresh total Index Count
+	m_nIndexCount += gameObjectIndexCount;
+
+	m_indicesOfGlobalVertexBuffer.push_back(m_indicesOfGlobalVertexBuffer.back() + gameObjectVertexCount);
+	m_indicesOfGlobalIndexBuffer.push_back(m_indicesOfGlobalIndexBuffer.back() + gameObjectIndexCount);
+
+	// Expand global vertex, index buffer memory  
+	auto previousSize = m_globalVertexBufferInSystemMemory.size();
+	m_globalVertexBufferInSystemMemory.resize(previousSize + addedObjectVertexBufferSizeInByte);
+	memcpy(&(m_globalVertexBufferInSystemMemory[previousSize]), pGameObject->GetAddressOfVertexArray(), addedObjectVertexBufferSizeInByte);
+
+	previousSize = m_globalIndexBufferInSystemMemory.size();
+	m_globalIndexBufferInSystemMemory.resize(previousSize + addedObjectIndexBufferSizeInByte);
+	memcpy(&(m_globalIndexBufferInSystemMemory[previousSize]), pGameObject->GetAddressOfIndexArray(), addedObjectIndexBufferSizeInByte);
+
+	// finally, game object should be registered to this world.
 	m_objectList.push_back(pGameObject);
-	// make ensure that the size of m_objectList is equal to the size of game object.
+	
+	// add pGameObject's world matrix into m_objectWorldMatrices
+	m_objectWorldMatrices.push_back(pGameObject->GetWorldMatrix());
+
+	// the size of our vectors should be equal to the # of their contents.
 	m_objectList.shrink_to_fit();
-
-	auto addedObjectVertexBufferSizeInByte = pGameObject->GetVertexCount() * pGameObject->GetVertexByteSize();
-	auto addedObjectIndexBufferSizeInByte = pGameObject->GetIndexCount() * pGameObject->GetIndexByteSize();
-		
-	m_totalIndexCount += pGameObject->GetIndexCount();
-
-	currentIndiciesOfVertexBuffer += pGameObject->GetVertexCount();
-	currentIndiciesOfIndexBuffer += pGameObject->GetIndexCount();
-
-	m_indicesOfGlobalVertexBuffer.push_back(currentIndiciesOfVertexBuffer);
-	m_indicesOfGlobalIndexBuffer.push_back(currentIndiciesOfIndexBuffer);
 	m_indicesOfGlobalVertexBuffer.shrink_to_fit();
 	m_indicesOfGlobalIndexBuffer.shrink_to_fit();
-
-	m_globalVertexBufferInSystemMemory.resize(m_globalVertexBufferInSystemMemory.size() + addedObjectVertexBufferSizeInByte);
-	m_globalIndexBufferInSystemMemory.resize(m_globalIndexBufferInSystemMemory.size() + addedObjectIndexBufferSizeInByte);
-	
-	// copy to CGameWorld's internal memory
-	memcpy(&(m_globalVertexBufferInSystemMemory[m_globalVertexBufferInSystemMemory.size() - addedObjectVertexBufferSizeInByte]), pGameObject->GetAddressOfVertexArray(), addedObjectVertexBufferSizeInByte);
-	memcpy(&(m_globalIndexBufferInSystemMemory[m_globalIndexBufferInSystemMemory.size() - addedObjectIndexBufferSizeInByte]), pGameObject->GetAddressOfIndexArray(), addedObjectIndexBufferSizeInByte);
+	m_objectWorldMatrices.shrink_to_fit();
 
 	return true;
 }
 
-void CGameWorld::SetCameraPositionTo(const float positionW[3], const float targetPositionW[3], const float upVectorW[3])
-{
-	assert(m_bInitialized == true && positionW != nullptr && targetPositionW != nullptr && upVectorW != nullptr);
 
-	m_camera.SetPositionW(positionW[0], positionW[1], positionW[2]);
-	m_camera.SetTargetPositionW(targetPositionW[0], targetPositionW[1], targetPositionW[2]);
-	m_camera.SetUpVectorW(upVectorW[0], upVectorW[1], upVectorW[2]);
-}
 
-const std::vector<CGameObject*>* CGameWorld::GetGameObjectList() const
+const vector<CGameObject*>& CGameWorld::GetGameObjectList() const
 {
 	assert(m_bInitialized == true);
-	return &m_objectList;
+	return m_objectList;
 }
 
-const CCamera* CGameWorld::GetCamera() const
+CCamera& CGameWorld::GetCamera()
 {
 	assert(m_bInitialized == true);
-	return &m_camera;
+	return m_camera;
 }
 
 unsigned int CGameWorld::GetNumberOfDrawableObject() const
@@ -101,16 +101,16 @@ unsigned int CGameWorld::GetNumberOfDrawableObject() const
 	return m_objectList.size();
 }
 
-const std::vector<unsigned int>* CGameWorld::GetIndicesOfVertexBuffer() const
+const std::vector<unsigned int>& CGameWorld::GetIndicesOfVertexBuffer() const
 {
 	assert(m_bInitialized == true);
-	return &m_indicesOfGlobalVertexBuffer;
+	return m_indicesOfGlobalVertexBuffer;
 }
 
-const std::vector<unsigned int>* CGameWorld::GetIndicesOfIndexBuffer() const
+const std::vector<unsigned int>& CGameWorld::GetIndicesOfIndexBuffer() const
 {
 	assert(m_bInitialized == true);
-	return &m_indicesOfGlobalIndexBuffer;
+	return m_indicesOfGlobalIndexBuffer;
 }
 
 const void* CGameWorld::GetContVertexArray() const
@@ -132,7 +132,7 @@ const void* CGameWorld::GetContIndexArray() const
 unsigned int CGameWorld::GetIndexCount() const
 {
 	assert(m_bInitialized == true);
-	return m_totalIndexCount;
+	return m_nIndexCount;
 }
 
 unsigned int CGameWorld::GetTotalVertexBufferSizeInByte() const
@@ -152,17 +152,10 @@ unsigned int CGameWorld::GetVertexStride() const
 	return sizeof(CGameObject::ModelVertex);
 }
 
-vector<XMFLOAT4X4> CGameWorld::GetWorldMatrices() const
+const vector<XMFLOAT4X4>& CGameWorld::GetWorldMatrices() const
 {
-	vector<XMFLOAT4X4> retMatrices;
-	for (auto pEachObject : m_objectList)
-	{
-		auto eachWorldMatrix = pEachObject->GetWorldMatrix();
-
-		retMatrices.push_back(eachWorldMatrix);
-	}
-
-	return retMatrices;
+	assert(m_bInitialized == true);
+	return m_objectWorldMatrices;
 }
 
 DirectX::XMFLOAT4X4 CGameWorld::GetCameraMatrix() const
@@ -170,7 +163,6 @@ DirectX::XMFLOAT4X4 CGameWorld::GetCameraMatrix() const
 	assert(m_bInitialized == true);
 	return m_camera.GetViewMatrix();
 }
-
 
 void CGameWorld::_ReleaseObjectList()
 {
@@ -184,4 +176,61 @@ void CGameWorld::_ReleaseObjectList()
 		}
 	}
 	m_objectList.clear();
+}
+
+bool CGameWorld::UpdateAll()
+{
+	assert(m_bInitialized == true);
+	int i = 0;
+
+	if (m_bInitialized == false)
+	{
+		goto FAILURE;
+	}
+
+	for (auto pEachObject : m_objectList)
+	{
+		m_objectWorldMatrices[i] = pEachObject->GetWorldMatrix();
+		i++;
+	}
+
+	return true;
+FAILURE:
+	return false;
+}
+
+bool CGameWorld::Update(CGameObject * pUpdatedGameObject)
+{
+	assert(pUpdatedGameObject != nullptr);
+	assert(m_bInitialized == true);
+
+	if (pUpdatedGameObject == nullptr || m_bInitialized == false)
+	{
+		goto FAILURE;
+	}
+
+	bool bExist = false;
+	int objectIndex = 0;
+	// check whether pUpdatedGameObject is the member of m_objectList
+	for (auto pEachObject : m_objectList)
+	{
+		if (pEachObject == pUpdatedGameObject)
+		{
+			bExist = true;
+			break;
+		}
+		objectIndex++;
+	}
+
+	if (bExist == false)
+	{
+		goto FAILURE;
+	}
+	
+	// update (objectIndex)th world Matrix 
+	m_objectWorldMatrices[objectIndex] = pUpdatedGameObject->GetWorldMatrix();
+
+	return true;
+FAILURE:
+	return false;
 }

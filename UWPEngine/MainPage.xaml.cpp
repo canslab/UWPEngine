@@ -65,25 +65,28 @@ MainPage::MainPage()
 	m_pObject2->SetPositionW({ 0,0.5,0,1 });
 
 	// 월드를 만든다
-	CGameWorld *pMyWorld = new CGameWorld();
-	if (pMyWorld->Initialize())
+	m_pWorld = new CGameWorld();
+	if (m_pWorld->Initialize())
 	{
 		// world 초기화 실패
 	}
 
 	// 월드에 오브젝트 두 개를 추가한다.
-	pMyWorld->AddObject(m_pObject1);
-	pMyWorld->AddObject(m_pObject2);
+	m_pWorld->AddObject(m_pObject1);
+	m_pWorld->AddObject(m_pObject2);
 
 	// 카메라 위치, 타깃, 업 벡터를 만들고, 월드 카메라에 설정한다.
 	float cameraPosition[] = { 0,0,-5 };
 	float cameraTargetPos[] = { 0,0,0 };
 	float cameraUpVector[] = { 0,1,0 };
 
-	pMyWorld->SetCameraPositionTo(cameraPosition, cameraTargetPos, cameraUpVector);
+	auto& camera = m_pWorld->GetCamera();
+	camera.SetPositionW(0, 0, -5);
+	camera.SetTargetPositionW(0, 0, 0);
+	camera.SetUpVectorW(0, 1, 0);
 
 	// 엔진에 월드를 추가 한다.
-	m_pEngine->AddWorld(pMyWorld);
+	m_pEngine->AddWorld(m_pWorld);
 	
 	EventHandler<Object^>^ ev = ref new EventHandler<Object^>(this, &MainPage::OnUpdate);
 	CompositionTarget::Rendering += ev;
@@ -128,6 +131,7 @@ void UWPEngine::MainPage::OnPointerPressed(Windows::UI::Core::CoreWindow ^ coreW
 		curXPos += 0.1f;
 	}
 	m_pObject1->SetPositionW({ curXPos, 0, 0, 1 });
+	m_pWorld->Update(m_pObject1);
 	m_bPressed = true;
 }
 

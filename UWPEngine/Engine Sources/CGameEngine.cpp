@@ -68,5 +68,6 @@ void CGameEngine::Process() const
 
 void CGameEngine::AddWorld(CGameWorld * pWorld)
 {
+	assert(pWorld != nullptr);
 	m_pGameWorld = pWorld;
 }

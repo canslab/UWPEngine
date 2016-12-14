@@ -27,6 +27,7 @@ namespace UWPEngine
 	
 	private:
 		CGameEngine *m_pEngine;
+		CGameWorld *m_pWorld;
 		CGameObject *m_pObject1;
 		CGameObject *m_pObject2;
 

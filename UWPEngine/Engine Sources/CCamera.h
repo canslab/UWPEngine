@@ -30,7 +30,12 @@ public:
 	DirectX::XMFLOAT4X4 GetViewMatrix() const;
 
 public:
+	CCamera();
 	virtual ~CCamera();
+
+	// prohibit copy constructor, copy assignment operator
+	CCamera(const CCamera& rhs) = delete;
+	CCamera& operator=(const CCamera& rhs) = delete;
 
 private:
 	bool			  m_bInitialized;

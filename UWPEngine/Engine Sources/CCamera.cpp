@@ -2,6 +2,14 @@
 #include "CCamera.h"
 using namespace DirectX;
 
+CCamera::CCamera():
+	m_bInitialized(false),
+	m_positionW(0,0,0,0),
+	m_targetW(0,0,0,0),
+	m_upW(0,0,0,0)
+{
+}
+
 CCamera::~CCamera()
 {
 
