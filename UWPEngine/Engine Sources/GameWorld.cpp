@@ -1,4 +1,4 @@
-#include "pch.h"
+﻿#include "pch.h"
 #include "GameWorld.h"
 #include "GameObject.h"
 #include "CCamera.h"
@@ -46,25 +46,7 @@ bool CGameWorld::AddObject(CGameObject * pGameObject)
 		return false;
 	}
 
-	auto gameObjectVertexCount = pGameObject->GetVertexCount();
-	auto gameObjectIndexCount = pGameObject->GetIndexCount();
-	auto addedObjectVertexBufferSizeInByte = gameObjectVertexCount * pGameObject->GetVertexByteSize();
-	auto addedObjectIndexBufferSizeInByte = gameObjectIndexCount * pGameObject->GetIndexByteSize();
-	
-	// refresh total Index Count
-	m_nIndexCount += gameObjectIndexCount;
-
-	m_indicesOfGlobalVertexBuffer.push_back(m_indicesOfGlobalVertexBuffer.back() + gameObjectVertexCount);
-	m_indicesOfGlobalIndexBuffer.push_back(m_indicesOfGlobalIndexBuffer.back() + gameObjectIndexCount);
-
-	// Expand global vertex, index buffer memory  
-	auto previousSize = m_globalVertexBufferInSystemMemory.size();
-	m_globalVertexBufferInSystemMemory.resize(previousSize + addedObjectVertexBufferSizeInByte);
-	memcpy(&(m_globalVertexBufferInSystemMemory[previousSize]), pGameObject->GetAddressOfVertexArray(), addedObjectVertexBufferSizeInByte);
-
-	previousSize = m_globalIndexBufferInSystemMemory.size();
-	m_globalIndexBufferInSystemMemory.resize(previousSize + addedObjectIndexBufferSizeInByte);
-	memcpy(&(m_globalIndexBufferInSystemMemory[previousSize]), pGameObject->GetAddressOfIndexArray(), addedObjectIndexBufferSizeInByte);
+	_LoadMeshFileAndSaveThemToGlobalBuffer(pGameObject->GetMeshFileName());
 
 	// finally, game object should be registered to this world.
 	m_objectList.push_back(pGameObject);
@@ -138,13 +120,13 @@ unsigned int CGameWorld::GetIndexCount() const
 unsigned int CGameWorld::GetTotalVertexBufferSizeInByte() const
 {
 	assert(m_bInitialized == true);
-	return m_globalVertexBufferInSystemMemory.size();
+	return m_globalVertexBufferInSystemMemory.size() * sizeof(CGameObject::ModelVertex);
 }
 
 unsigned int CGameWorld::GetTotalIndexBufferSizeInByte() const
 {
 	assert(m_bInitialized == true);
-	return m_globalIndexBufferInSystemMemory.size();
+	return m_globalIndexBufferInSystemMemory.size() * sizeof(UINT);
 }
 
 unsigned int CGameWorld::GetVertexStride() const
@@ -176,6 +158,87 @@ void CGameWorld::_ReleaseObjectList()
 		}
 	}
 	m_objectList.clear();
+}
+
+bool CGameWorld::_LoadMeshFileAndSaveThemToGlobalBuffer(const char * pMeshFileName)
+{
+	assert(pMeshFileName != nullptr);
+	if (pMeshFileName == nullptr)
+	{
+		return false;
+	}
+	// 기존에 pMeshFileName을 로드한 적이 있는지 체크!
+	if (m_meshFileNameSet.count(pMeshFileName) == 1)
+	{
+		return false;
+	}
+	else
+	{
+		// 기존에 로드한 적이 없는 신규 매쉬파일이라면, 장부에 등록!
+		m_meshFileNameSet.insert(pMeshFileName);
+	}
+
+	// 없다면 아래 코드 실행
+	std::ifstream meshFileStream(pMeshFileName, std::ios::in | std::ios::binary);
+	if (meshFileStream.is_open())
+	{
+		while (!meshFileStream.eof())
+		{
+			char line[100];
+			meshFileStream.getline(line, sizeof(line));
+
+			std::istringstream lineStream(line);
+			std::string token;
+
+			while (!lineStream.eof())
+			{
+				lineStream >> token;
+				if (token == "v")	// it means this sentence is about vertex information
+				{
+					char carriageReturn;
+					float v1, v2, v3;
+					lineStream >> v1 >> v2 >> v3;
+					lineStream >> carriageReturn;
+
+					m_globalVertexBufferInSystemMemory.push_back({ v1,v2,v3 });
+				}
+				else if (token == "f")
+				{
+					UINT vertexIndex1, vertexIndex2, vertexIndex3;
+					char carriageReturn;
+					std::string ignore;
+
+					lineStream >> vertexIndex1 >> ignore;
+					lineStream >> vertexIndex2 >> ignore;
+					lineStream >> vertexIndex3 >> ignore;
+					lineStream >> carriageReturn;
+
+					m_globalIndexBufferInSystemMemory.push_back(vertexIndex1 - 1);
+					m_globalIndexBufferInSystemMemory.push_back(vertexIndex2 - 1);
+					m_globalIndexBufferInSystemMemory.push_back(vertexIndex3 - 1);
+				}
+
+				else
+				{
+					break;
+				}
+			}
+		}
+		m_nIndexCount += m_globalIndexBufferInSystemMemory.size();
+
+		m_indicesOfGlobalVertexBuffer.push_back(m_indicesOfGlobalVertexBuffer.back() + m_globalVertexBufferInSystemMemory.size());
+		m_indicesOfGlobalIndexBuffer.push_back(m_indicesOfGlobalIndexBuffer.back() + m_globalIndexBufferInSystemMemory.size());
+	}
+	else
+	{
+		m_bInitialized = false;
+		return false;
+	}
+
+
+
+
+	return false;
 }
 
 bool CGameWorld::UpdateAll()

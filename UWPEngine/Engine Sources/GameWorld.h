@@ -38,17 +38,19 @@ public:
 
 protected:
 	void _ReleaseObjectList();
+	bool _LoadMeshFileAndSaveThemToGlobalBuffer(const char *pMeshFileName);
 
+	std::set<std::string> m_meshFileNameSet;
 protected:
 	CCamera								m_camera;
 	std::vector<CGameObject*>			m_objectList;
 	std::vector<DirectX::XMFLOAT4X4>	m_objectWorldMatrices;
 	bool								m_bInitialized;
 
-	std::vector<unsigned char>			m_globalVertexBufferInSystemMemory;
-	std::vector<unsigned char>			m_globalIndexBufferInSystemMemory;
-	std::vector<unsigned int>			m_indicesOfGlobalVertexBuffer;
-	std::vector<unsigned int>			m_indicesOfGlobalIndexBuffer;
+	std::vector<CGameObject::ModelVertex>	m_globalVertexBufferInSystemMemory;
+	std::vector<UINT>						m_globalIndexBufferInSystemMemory;
+	std::vector<unsigned int>				m_indicesOfGlobalVertexBuffer;
+	std::vector<unsigned int>				m_indicesOfGlobalIndexBuffer;
 
 	unsigned int						m_nIndexCount;
 };

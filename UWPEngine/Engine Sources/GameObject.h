@@ -8,12 +8,12 @@ public:
 	virtual ~CGameObject();
 
 public:
-	unsigned int				GetVertexByteSize() const;
-	unsigned int				GetVertexCount() const;
-	void*						GetAddressOfVertexArray() const;
-	unsigned int				GetIndexCount() const;
-	unsigned int				GetIndexByteSize() const;
-	void*						GetAddressOfIndexArray() const;
+	//unsigned int				GetVertexByteSize() const;
+	//unsigned int				GetVertexCount() const;
+	//void*						GetAddressOfVertexArray() const;
+	//unsigned int				GetIndexCount() const;
+	//unsigned int				GetIndexByteSize() const;
+	//void*						GetAddressOfIndexArray() const;
 	
 	DirectX::XMFLOAT4X4			GetWorldMatrix() const;
 
@@ -26,6 +26,7 @@ public:
 	DirectX::XMFLOAT4			GetPosition() const;
 	DirectX::XMFLOAT3			GetScale() const;
 	
+	const char*					GetMeshFileName() const;
 
 	struct ModelVertex
 	{
@@ -45,7 +46,9 @@ protected:
 	int							m_nCurrentCount;
 	
 	Transform					m_transform;		// transform information
-	std::vector<ModelVertex>*	m_pVertexList;		// vertexs that composes a Game Object
-	std::vector<unsigned int>*	m_pIndexList;		// index list that composes a Game Object
+	const char*					m_pMeshFileName;		// mesh File name for lazy evaluation
 	bool						m_bInitialized;		// whether Game Object is initialized or not
+
+	//std::vector<ModelVertex>*	m_pVertexList;		// vertexs that composes a Game Object
+	//std::vector<unsigned int>*	m_pIndexList;		// index list that composes a Game Object
 };
