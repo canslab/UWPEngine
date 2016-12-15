@@ -3,6 +3,7 @@
 #include "CCamera.h"
 #include "GameObject.h"
 #include "GameWorld.h"
+#include "GameTimer.h"
 
 class CGameEngine
 {
@@ -13,7 +14,7 @@ public:
 	void UpdateForWindowSizeOrScaleChanged(const Windows::Foundation::Size *pNewLogicalSize, float fCompositionScaleX, float fCompositionScaleY);
 
 	void Process() const;
-	void AddWorld(CGameWorld *pWorld);
+	void SetWorld(CGameWorld *pWorld);
 
 	virtual ~CGameEngine();
 

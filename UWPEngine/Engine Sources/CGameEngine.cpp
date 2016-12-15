@@ -5,8 +5,6 @@
 using namespace Windows::UI::Xaml::Controls;
 using namespace std;
 
-// think of m_pCameraList as vector<Camera*>
-
 CGameEngine::CGameEngine() :
 	m_pRenderer(new CD3DRenderer())
 {
@@ -57,16 +55,17 @@ void CGameEngine::UpdateForWindowSizeOrScaleChanged(const Windows::Foundation::S
 void CGameEngine::Process() const
 {
 	assert(m_pRenderer != nullptr);
+	
 	m_pRenderer->BeginDraw();
 	if (m_pGameWorld)
 	{
 		m_pRenderer->Draw(*m_pGameWorld);
 	}
-	m_pRenderer->EndDraw();
+	m_pRenderer->EndDraw();	
 	m_pRenderer->Present();
 }
 
-void CGameEngine::AddWorld(CGameWorld * pWorld)
+void CGameEngine::SetWorld(CGameWorld * pWorld)
 {
 	assert(pWorld != nullptr);
 	m_pGameWorld = pWorld;

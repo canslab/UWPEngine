@@ -20,10 +20,12 @@ public:
 	bool						Initialize(const std::string& meshFileName);
 	void						SetPositionW(const std::vector<float> &positionW);
 	void						SetScale(const std::vector<float> &scales);
+	void						SetRotation(const std::vector<float> &rotationAngles);
 
 	bool						IsInitalized() const;
 	DirectX::XMFLOAT4			GetPosition() const;
 	DirectX::XMFLOAT3			GetScale() const;
+	
 
 	struct ModelVertex
 	{
@@ -37,6 +39,7 @@ protected:
 	{
 		float x, y, z;
 		float xScale, yScale, zScale;
+		float xRotAngle, yRotAngle, zRotAngle;
 	};
 
 	int							m_nCurrentCount;

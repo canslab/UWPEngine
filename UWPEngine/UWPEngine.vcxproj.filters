@@ -49,6 +49,9 @@
     <ClCompile Include="Engine Sources\CGameEngine.cpp">
       <Filter>GameEngine</Filter>
     </ClCompile>
+    <ClCompile Include="GameTimer.cpp">
+      <Filter>GameEngine</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -73,6 +76,9 @@
       <Filter>GameEngine\Objects</Filter>
     </ClInclude>
     <ClInclude Include="Engine Sources\CGameEngine.h">
+      <Filter>GameEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="GameTimer.h">
       <Filter>GameEngine</Filter>
     </ClInclude>
   </ItemGroup>
@@ -101,6 +107,12 @@
     <Image Include="Assets\box.obj">
       <Filter>Assets</Filter>
     </Image>
+    <Image Include="Assets\Cube.obj">
+      <Filter>Assets</Filter>
+    </Image>
+    <Image Include="Assets\teapot.obj">
+      <Filter>Assets</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest" />
@@ -118,5 +130,10 @@
     <FxCompile Include="Engine Sources\vertex.hlsl">
       <Filter>GameEngine\Shaders</Filter>
     </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Object Include="Assets\BMW.obj">
+      <Filter>Assets</Filter>
+    </Object>
   </ItemGroup>
 </Project>

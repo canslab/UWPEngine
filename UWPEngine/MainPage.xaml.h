@@ -27,9 +27,9 @@ namespace UWPEngine
 	
 	private:
 		CGameEngine *m_pEngine;
+		CGameTimer *m_pTimer;
 		CGameWorld *m_pWorld;
 		CGameObject *m_pObject1;
-		CGameObject *m_pObject2;
 
 		bool m_bPressed;
 	};

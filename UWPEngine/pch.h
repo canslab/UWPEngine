@@ -15,6 +15,7 @@
 #include <fstream>
 #include <sstream>
 #include <windows.ui.xaml.media.dxinterop.h>
+#include <Windows.h>
 
 #include <d3d11.h>
 #include <d3d11_2.h>

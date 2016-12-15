@@ -140,6 +140,14 @@ void CGameObject::SetScale(const std::vector<float>& scales)
 	m_transform.zScale = scales[2];
 }
 
+void CGameObject::SetRotation(const std::vector<float>& rotationAngles)
+{
+	assert(m_bInitialized == true && rotationAngles.size() == 3);
+	m_transform.xRotAngle = rotationAngles[0];
+	m_transform.yRotAngle = rotationAngles[1];
+	m_transform.zRotAngle = rotationAngles[2];
+}
+
 bool CGameObject::IsInitalized() const
 {
 	return m_bInitialized;
@@ -163,10 +171,11 @@ XMFLOAT4X4 CGameObject::GetWorldMatrix() const
 	XMFLOAT4X4 retMatrix;
 
 	auto scalingMatrix = XMMatrixScaling(m_transform.xScale, m_transform.yScale, m_transform.zScale);
-	// rotating matrix should be inserted here!
+	auto rotationMatrix = XMMatrixRotationX(m_transform.xRotAngle) * XMMatrixRotationY(m_transform.yRotAngle) *XMMatrixRotationZ(m_transform.zRotAngle);
 	auto translationMatrix = XMMatrixTranslation(m_transform.x, m_transform.y, m_transform.z);
 
-	auto resultWorldMatrix = scalingMatrix * translationMatrix;
+	// S * R * T
+	auto resultWorldMatrix = scalingMatrix * rotationMatrix * translationMatrix;
 	XMStoreFloat4x4(&retMatrix, resultWorldMatrix);
 	
 	return retMatrix;

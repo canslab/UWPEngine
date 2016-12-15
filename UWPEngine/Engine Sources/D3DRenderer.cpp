@@ -528,7 +528,7 @@ bool CD3DRenderer::CreateVertexBuffer(const IDrawable& object)
 	vertexBufferDesc.MiscFlags = 0;
 	vertexBufferDesc.Usage = D3D11_USAGE_IMMUTABLE;
 	vertexBufferDesc.StructureByteStride = 0;
-
+	
 	const void *pVertexData = object.GetContVertexArray();
 
 	D3D11_SUBRESOURCE_DATA srd = { pVertexData, 0, 0 };
