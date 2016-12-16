@@ -17,7 +17,7 @@ public:
 	
 	DirectX::XMFLOAT4X4			GetWorldMatrix() const;
 
-	bool						Initialize(const std::string& meshFileName);
+	bool						Initialize(std::string meshFileName);
 	void						SetPositionW(const std::vector<float> &positionW);
 	void						SetScale(const std::vector<float> &scales);
 	void						SetRotation(const std::vector<float> &rotationAngles);
@@ -46,7 +46,7 @@ protected:
 	int							m_nCurrentCount;
 	
 	Transform					m_transform;		// transform information
-	const char*					m_pMeshFileName;		// mesh File name for lazy evaluation
+	char						m_pMeshFileName[50];		// mesh File name for lazy evaluation
 	bool						m_bInitialized;		// whether Game Object is initialized or not
 
 	//std::vector<ModelVertex>*	m_pVertexList;		// vertexs that composes a Game Object

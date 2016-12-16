@@ -741,7 +741,7 @@ void CD3DRenderer::Draw(const IDrawable & drawableObject)
 	UINT stride = drawableObject.GetVertexStride();
 	UINT offset = 0;
 
-	struct CIBAL
+	struct MatrixStruct
 	{
 		float worldMatrix[4][4];
 		float viewMatrix[4][4];
@@ -762,22 +762,18 @@ void CD3DRenderer::Draw(const IDrawable & drawableObject)
 
 	auto worldMatrices = drawableObject.GetWorldMatrices();
 	auto cameraMatrix = drawableObject.GetCameraMatrix();
-	auto indiciesInVertexBuffer = drawableObject.GetIndicesOfVertexBuffer();
-	auto indiciesInIndexBuffer = drawableObject.GetIndicesOfIndexBuffer();
 
 	for (unsigned int i = 0; i < drawableObject.GetNumberOfDrawableObject(); ++i)
 	{
-		CIBAL ooo;
-		auto curObjectStartIndexLocation = indiciesInIndexBuffer[i];
-		auto curObjectBaseVertexLocation = indiciesInVertexBuffer[i];
-		auto curObjectIndexCount = indiciesInIndexBuffer[i+1] - indiciesInIndexBuffer[i];
-			
+		auto data = drawableObject[i];
+		MatrixStruct ooo;
+		
 		memcpy(ooo.worldMatrix, &worldMatrices[i], sizeof(float) * 16);
 		memcpy(ooo.viewMatrix, &cameraMatrix, sizeof(float) * 16);
 		memcpy(ooo.projMatrix, &m_projMatrix, sizeof(float) * 16);
-		m_pDeviceContext->UpdateSubresource(m_pConstantBuffer.Get(), 0, nullptr, &ooo, 0, 0);
 
-		m_pDeviceContext->DrawIndexed(curObjectIndexCount, curObjectStartIndexLocation, curObjectBaseVertexLocation);
+		m_pDeviceContext->UpdateSubresource(m_pConstantBuffer.Get(), 0, nullptr, &ooo, 0, 0);
+		m_pDeviceContext->DrawIndexed(data.indexCount, data.startIndex, data.baseVertexLocation);
 	}
 }
 

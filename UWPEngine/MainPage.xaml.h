@@ -30,6 +30,10 @@ namespace UWPEngine
 		CGameTimer *m_pTimer;
 		CGameWorld *m_pWorld;
 		CGameObject *m_pObject1;
+		CGameObject *m_pObject2;
+		CGameObject *m_pObject3;
+		CGameObject *m_pObject4;
+		CGameObject *m_pObject5;
 
 		bool m_bPressed;
 	};

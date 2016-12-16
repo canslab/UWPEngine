@@ -60,12 +60,10 @@ CGameObject::~CGameObject()
 //	return &(m_pIndexList->at(0));
 //}
 
-bool CGameObject::Initialize(const string& meshFileName)
+bool CGameObject::Initialize(string meshFileName)
 {
 	assert(m_bInitialized == false);
-	m_pMeshFileName = meshFileName.c_str();
-
-	
+	strcpy_s(m_pMeshFileName, meshFileName.c_str());
 
 	m_bInitialized = true;
 	//m_pVertexList->shrink_to_fit();

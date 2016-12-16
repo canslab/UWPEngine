@@ -46,7 +46,7 @@ bool CGameWorld::AddObject(CGameObject * pGameObject)
 		return false;
 	}
 
-	_LoadMeshFileAndSaveThemToGlobalBuffer(pGameObject->GetMeshFileName());
+	_SaveToGlobalBuffers(pGameObject);
 
 	// finally, game object should be registered to this world.
 	m_objectList.push_back(pGameObject);
@@ -59,11 +59,8 @@ bool CGameWorld::AddObject(CGameObject * pGameObject)
 	m_indicesOfGlobalVertexBuffer.shrink_to_fit();
 	m_indicesOfGlobalIndexBuffer.shrink_to_fit();
 	m_objectWorldMatrices.shrink_to_fit();
-
 	return true;
 }
-
-
 
 const vector<CGameObject*>& CGameWorld::GetGameObjectList() const
 {
@@ -146,6 +143,17 @@ DirectX::XMFLOAT4X4 CGameWorld::GetCameraMatrix() const
 	return m_camera.GetViewMatrix();
 }
 
+IDrawable::DrawInfo CGameWorld::operator[](UINT idx) const
+{
+	assert(idx < m_objectList.size());
+	IDrawable::DrawInfo retInfo;
+
+	auto curMeshName = m_objectList[idx]->GetMeshFileName();
+	retInfo = m_lookUpTable.at(curMeshName);
+
+	return retInfo;
+}
+
 void CGameWorld::_ReleaseObjectList()
 {
 	assert(m_bInitialized == true);
@@ -160,26 +168,35 @@ void CGameWorld::_ReleaseObjectList()
 	m_objectList.clear();
 }
 
-bool CGameWorld::_LoadMeshFileAndSaveThemToGlobalBuffer(const char * pMeshFileName)
+bool CGameWorld::_SaveToGlobalBuffers(CGameObject *pGameObject)
 {
-	assert(pMeshFileName != nullptr);
-	if (pMeshFileName == nullptr)
+	assert(pGameObject != nullptr);
+	if (pGameObject == nullptr)
 	{
 		return false;
 	}
-	// 기존에 pMeshFileName을 로드한 적이 있는지 체크!
-	if (m_meshFileNameSet.count(pMeshFileName) == 1)
+	if (pGameObject->GetMeshFileName() == nullptr)
 	{
 		return false;
+	}
+
+	auto meshFileName = pGameObject->GetMeshFileName();
+
+	// 기존에 pMeshFileName을 로드한 적이 있거나 매쉬파일의 이름이 없다면 false를 리턴!
+	if (m_meshFileNameSet.count(meshFileName) == 1 )
+	{
+		return true;
 	}
 	else
 	{
 		// 기존에 로드한 적이 없는 신규 매쉬파일이라면, 장부에 등록!
-		m_meshFileNameSet.insert(pMeshFileName);
+		m_meshFileNameSet.insert(meshFileName);
 	}
 
+	UINT addedIndexCount = 0;
+
 	// 없다면 아래 코드 실행
-	std::ifstream meshFileStream(pMeshFileName, std::ios::in | std::ios::binary);
+	std::ifstream meshFileStream(meshFileName, std::ios::in | std::ios::binary);
 	if (meshFileStream.is_open())
 	{
 		while (!meshFileStream.eof())
@@ -196,11 +213,11 @@ bool CGameWorld::_LoadMeshFileAndSaveThemToGlobalBuffer(const char * pMeshFileNa
 				if (token == "v")	// it means this sentence is about vertex information
 				{
 					char carriageReturn;
-					float v1, v2, v3;
-					lineStream >> v1 >> v2 >> v3;
+					float x, y, z;
+					lineStream >> x >> y >> z;
 					lineStream >> carriageReturn;
 
-					m_globalVertexBufferInSystemMemory.push_back({ v1,v2,v3 });
+					m_globalVertexBufferInSystemMemory.push_back({ x,y,z });
 				}
 				else if (token == "f")
 				{
@@ -216,6 +233,8 @@ bool CGameWorld::_LoadMeshFileAndSaveThemToGlobalBuffer(const char * pMeshFileNa
 					m_globalIndexBufferInSystemMemory.push_back(vertexIndex1 - 1);
 					m_globalIndexBufferInSystemMemory.push_back(vertexIndex2 - 1);
 					m_globalIndexBufferInSystemMemory.push_back(vertexIndex3 - 1);
+
+					addedIndexCount += 3;
 				}
 
 				else
@@ -224,8 +243,9 @@ bool CGameWorld::_LoadMeshFileAndSaveThemToGlobalBuffer(const char * pMeshFileNa
 				}
 			}
 		}
-		m_nIndexCount += m_globalIndexBufferInSystemMemory.size();
-
+		m_lookUpTable[pGameObject->GetMeshFileName()] = { addedIndexCount, m_indicesOfGlobalIndexBuffer.back(), m_indicesOfGlobalVertexBuffer.back() };
+		
+		m_nIndexCount += addedIndexCount;
 		m_indicesOfGlobalVertexBuffer.push_back(m_indicesOfGlobalVertexBuffer.back() + m_globalVertexBufferInSystemMemory.size());
 		m_indicesOfGlobalIndexBuffer.push_back(m_indicesOfGlobalIndexBuffer.back() + m_globalIndexBufferInSystemMemory.size());
 	}
@@ -235,10 +255,7 @@ bool CGameWorld::_LoadMeshFileAndSaveThemToGlobalBuffer(const char * pMeshFileNa
 		return false;
 	}
 
-
-
-
-	return false;
+	return true;
 }
 
 bool CGameWorld::UpdateAll()

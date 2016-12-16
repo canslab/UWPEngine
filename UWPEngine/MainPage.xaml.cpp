@@ -57,7 +57,33 @@ MainPage::MainPage()
 	{
 		// Asset에서 불러오는 데 실패했다는 이야기.
 	}
-	//m_pObject1->SetRotation({0, 0, 0.785f });
+	m_pObject2 = new CGameObject();
+	bInitResult = m_pObject2->Initialize("./Assets/BMW.obj");
+	if (bInitResult)
+	{
+		// Asset에서 불러오는 데 실패했다는 이야기.
+	}
+
+	m_pObject3 = new CGameObject();
+	bInitResult = m_pObject3->Initialize("./Assets/BMW.obj");
+	if (bInitResult)
+	{
+		// Asset에서 불러오는 데 실패했다는 이야기.
+	}
+
+	m_pObject4 = new CGameObject();
+	bInitResult = m_pObject4->Initialize("./Assets/BMW.obj");
+	if (bInitResult)
+	{
+		// Asset에서 불러오는 데 실패했다는 이야기.
+	}
+
+	m_pObject5 = new CGameObject();
+	bInitResult = m_pObject5->Initialize("./Assets/BMW.obj");
+	if (bInitResult)
+	{
+		// Asset에서 불러오는 데 실패했다는 이야기.
+	}
 
 
 	// 월드를 만든다
@@ -69,6 +95,10 @@ MainPage::MainPage()
 
 	// 월드에 오브젝트 두 개를 추가한다.
 	m_pWorld->AddObject(m_pObject1);
+	m_pWorld->AddObject(m_pObject2);
+	m_pWorld->AddObject(m_pObject3);
+	m_pWorld->AddObject(m_pObject4);
+	m_pWorld->AddObject(m_pObject5);
 
 	// 카메라 위치, 타깃, 업 벡터를 만들고, 월드 카메라에 설정한다.
 	float cameraPosition[] = { 0,0,-5 };

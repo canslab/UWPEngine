@@ -29,6 +29,8 @@ public:
 	virtual const std::vector<DirectX::XMFLOAT4X4>&		GetWorldMatrices() const;
 	virtual DirectX::XMFLOAT4X4							GetCameraMatrix() const;
 
+	virtual DrawInfo									operator[](UINT idx) const;
+
 public:
 	CGameWorld();
 	virtual ~CGameWorld();
@@ -38,20 +40,22 @@ public:
 
 protected:
 	void _ReleaseObjectList();
-	bool _LoadMeshFileAndSaveThemToGlobalBuffer(const char *pMeshFileName);
+	bool _SaveToGlobalBuffers(CGameObject *pGameObject);
 
 	std::set<std::string> m_meshFileNameSet;
 protected:
-	CCamera								m_camera;
-	std::vector<CGameObject*>			m_objectList;
-	std::vector<DirectX::XMFLOAT4X4>	m_objectWorldMatrices;
-	bool								m_bInitialized;
 
-	std::vector<CGameObject::ModelVertex>	m_globalVertexBufferInSystemMemory;
-	std::vector<UINT>						m_globalIndexBufferInSystemMemory;
-	std::vector<unsigned int>				m_indicesOfGlobalVertexBuffer;
-	std::vector<unsigned int>				m_indicesOfGlobalIndexBuffer;
+	CCamera													m_camera;
+	std::vector<CGameObject*>								m_objectList;
+	std::vector<DirectX::XMFLOAT4X4>						m_objectWorldMatrices;
+	bool													m_bInitialized;
 
-	unsigned int						m_nIndexCount;
+	std::vector<CGameObject::ModelVertex>					m_globalVertexBufferInSystemMemory;
+	std::vector<UINT>										m_globalIndexBufferInSystemMemory;
+	std::vector<unsigned int>								m_indicesOfGlobalVertexBuffer;
+	std::vector<unsigned int>								m_indicesOfGlobalIndexBuffer;
+
+	std::map<std::string, DrawInfo>							m_lookUpTable;
+	unsigned int											m_nIndexCount;
 };
 
