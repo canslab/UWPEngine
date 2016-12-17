@@ -687,6 +687,7 @@ bool CD3DRenderer::UpdateForWindowSizeOrScaleChanged(const Windows::Foundation::
 
 void CD3DRenderer::MakeReadyForDrawableObject(const IDrawable & drawableObject)
 {
+	assert(m_bInitialized == true);
 	CreateVertexBuffer(drawableObject);
 	CreateIndexBuffer(drawableObject);
 }
