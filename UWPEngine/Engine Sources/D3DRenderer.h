@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include <dxgi1_2.h>
 #include "IDrawable.h"
@@ -6,37 +6,44 @@
 class CD3DRenderer
 {
 public:
+	// 렌더러를 XAML 체인패널을 이용해 초기화 한다.
 	bool Initialize(Windows::UI::Xaml::Controls::SwapChainPanel^ swapChainPanel);
+
+	// 윈도우 사이즈나, 스케일 값이 변경되었을 때 호출한다.
 	bool UpdateForWindowSizeOrScaleChanged(const Windows::Foundation::Size *newSize, float xScale, float yScale);
 	
-	void MakeReadyForDrawableObject(const IDrawable& drawableObject);
+	// drawableObject를 그리기 이전에 해야하는 작업들을 수행한다.
+	void BeReadyForDrawableObject(const IDrawable& drawableObject);
+	
+	// 드로잉을 준비한다!, 렌더타깃 설정, 뷰포트 설정, 렌더타깃 Clear, 스텐실뷰 Clear
 	void BeginDraw();
-	void Draw();
-	void Draw(const IDrawable& drawableObject);
-	void EndDraw() const;
-	void Present();
 
+	// drawable Object를 그린다!
+	void Draw(const IDrawable& drawableObject);
+
+	// 지금까지 드로잉한 내용을 Present한다
+	void EndDraw() const;
 
 public:
 	CD3DRenderer();
 	virtual ~CD3DRenderer();
 
 private:
-	bool CreateD3D();
-	bool CreateSwapChain(Windows::UI::Xaml::Controls::SwapChainPanel^ swapChainPanel, UINT width, UINT height);
-	void SetCompositionScale(float fCompositionScaleX, float fCompositionScaley);
+	bool _CreateD3D();
+	bool _CreateSwapChain(Windows::UI::Xaml::Controls::SwapChainPanel^ swapChainPanel, UINT width, UINT height);
+	void _SetCompositionScale(float fCompositionScaleX, float fCompositionScaley);
 	
-	bool CreateRTV_DSV_VP(UINT width, UINT height);
-	void SetRTVandDSVtoContext(float defaultColor[]);
-	void SetVPToContext();
+	bool _CreateRTV_DSV_VP(UINT width, UINT height);
+	void _SetRTVandDSVtoContext(float defaultColor[]);
+	void _SetVPToContext();
 
-	bool CreateShaders();
-	bool CreateInputLayout();
-	bool CreateVertexBuffer(const IDrawable& object);
-	bool CreateIndexBuffer(const IDrawable& object);
-	bool CreateConstantBuffer();
+	bool _CreateShaders();
+	bool _CreateInputLayout();
+	bool _CreateVertexBuffer(const IDrawable& object);
+	bool _CreateIndexBuffer(const IDrawable& object);
+	bool _CreateConstantBuffer();
 
-	void CleanRTVandDSV();
+	void _CleanRTVandDSV();
 
 	DirectX::XMFLOAT4X4										m_projMatrix;
 

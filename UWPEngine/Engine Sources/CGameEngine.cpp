@@ -62,7 +62,6 @@ void CGameEngine::Process() const
 		m_pRenderer->Draw(*m_pGameWorld);
 	}
 	m_pRenderer->EndDraw();	
-	m_pRenderer->Present();
 }
 
 void CGameEngine::SetWorld(CGameWorld * pWorld)
@@ -71,5 +70,5 @@ void CGameEngine::SetWorld(CGameWorld * pWorld)
 	assert (m_pRenderer != nullptr);
 	m_pGameWorld = pWorld;
 
-	m_pRenderer->MakeReadyForDrawableObject(*pWorld);
+	m_pRenderer->BeReadyForDrawableObject(*pWorld);
 }

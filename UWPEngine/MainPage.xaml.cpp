@@ -60,13 +60,14 @@ MainPage::MainPage()
 	
 	// 오브젝트 1개를 만든다..
 	m_pObject1 = new CGameObject();
-	bInitResult = m_pObject1->Initialize("./Assets/BMW.obj");
+	bInitResult = m_pObject1->Initialize("./Assets/teapot.obj");
 	if (bInitResult)
 	{
 		// Asset에서 불러오는 데 실패했다는 이야기.
 	}
 	m_pObject2 = new CGameObject();
 	bInitResult = m_pObject2->Initialize("./Assets/BMW.obj");
+	m_pObject2->SetScale({ 0.2f, 0.2f, 0.2f });
 	m_pObject2->SetPositionW({ -50, 0, 0, 1 });
 
 	if (bInitResult)
@@ -106,9 +107,9 @@ MainPage::MainPage()
 	// 월드에 오브젝트 두 개를 추가한다.
 	m_pWorld->AddObject(m_pObject1);
 	m_pWorld->AddObject(m_pObject2);
-	m_pWorld->AddObject(m_pObject3);
+	/*m_pWorld->AddObject(m_pObject3);
 	m_pWorld->AddObject(m_pObject4);
-	m_pWorld->AddObject(m_pObject5);
+	m_pWorld->AddObject(m_pObject5);*/
 
 	// 카메라 위치, 타깃, 업 벡터를 만들고, 월드 카메라에 설정한다.
 	float cameraPosition[] = { 0,0,-5 };
@@ -116,7 +117,7 @@ MainPage::MainPage()
 	float cameraUpVector[] = { 0,1,0 };
 
 	auto& camera = m_pWorld->GetCamera();
-	camera.SetPositionW(0, 0, -300);
+	camera.SetPositionW(0, 0, -100);
 	camera.SetTargetPositionW(0, 0, 0);
 	camera.SetUpVectorW(0, 1, 0);
 
@@ -134,10 +135,11 @@ void UWPEngine::MainPage::OnUpdate(Object ^ sender, Object ^ args)
 		// Update Scene
 		m_pTimer->Tick();
 		auto totalTime = m_pTimer->GetTotalTime();
-		//m_pWorld->GetCamera().MovePositionByOffsetZ(totalTime);
 
 		m_pObject1->SetRotation({ 0, totalTime , totalTime });
+		m_pObject2->SetRotation({ 0, totalTime * 2, 0});
 		m_pWorld->Update(m_pObject1);
+		m_pWorld->Update(m_pObject2);
 
 		// Render
 		m_pEngine->Process();

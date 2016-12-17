@@ -48,63 +48,55 @@ bool CD3DRenderer::Initialize(Windows::UI::Xaml::Controls::SwapChainPanel ^ swap
 	UINT height = lround(m_d3dRenderTargetSize.Height);
 
 	// Create D3D 
-	bResult = CreateD3D();
+	bResult = _CreateD3D();
 	if (bResult == false)
 	{
 		__debugbreak();
 		return false;
 	}
 
-	bResult = CreateSwapChain(swapChainPanel, width, height);
+	bResult = _CreateSwapChain(swapChainPanel, width, height);
 	if (bResult == false)
 	{
 		__debugbreak();
 		return false;
 	}
 
-	bResult = CreateRTV_DSV_VP(width, height);
+	bResult = _CreateRTV_DSV_VP(width, height);
 	if (bResult == false)
 	{
 		__debugbreak();
 		return false;
 	}
 
-	bResult = CreateShaders();
+	bResult = _CreateShaders();
 	if (bResult == false)
 	{
 		__debugbreak();
 		return false;
 	}
 
-	bResult = CreateInputLayout();
+	bResult = _CreateInputLayout();
 	if (bResult == false)
 	{
 		__debugbreak();
 		return false;
 	}
 
-	bResult = CreateConstantBuffer();
+	bResult = _CreateConstantBuffer();
 	if (bResult == false)
 	{
 		__debugbreak();
 		return false;
 	}
-
-
-	/*bResult = CreateVertexBuffer(
-	if (bResult == false)
-	{
-		__debugbreak();
-		return false;
-	}*/
 
 	float initColor[] = { 0,0,0,1 };
 
 	// Bind render target view & depth stencil view to the OM Stage
-	SetRTVandDSVtoContext(initColor);
+	_SetRTVandDSVtoContext(initColor);
 
 	// Bind Viewport to RS stage
-	SetVPToContext();
+	_SetVPToContext();
 
 	// set initalized !
 	m_bInitialized = true;
@@ -112,7 +104,7 @@ bool CD3DRenderer::Initialize(Windows::UI::Xaml::Controls::SwapChainPanel ^ swap
 }
 
 // Create D3D Device
-bool CD3DRenderer::CreateD3D()
+bool CD3DRenderer::_CreateD3D()
 {
 	assert(m_pDevice == nullptr && m_pDeviceContext == nullptr);
 	HRESULT hr;
@@ -221,7 +213,7 @@ bool CD3DRenderer::CreateD3D()
 
 	return true;
 }
-bool CD3DRenderer::CreateSwapChain(Windows::UI::Xaml::Controls::SwapChainPanel ^ swapChainPanel, UINT width, UINT height)
+bool CD3DRenderer::_CreateSwapChain(Windows::UI::Xaml::Controls::SwapChainPanel ^ swapChainPanel, UINT width, UINT height)
 {
 	assert(swapChainPanel != nullptr && width >= 1 && height >= 1);
 	assert(m_pSwapChain == nullptr && m_pSwapChainPanelNative == nullptr && m_pDevice != nullptr);
@@ -332,11 +324,11 @@ bool CD3DRenderer::CreateSwapChain(Windows::UI::Xaml::Controls::SwapChainPanel ^
 	m_pSwapChain->SetRotation(DXGI_MODE_ROTATION_IDENTITY);
 
 	// inverse scale 필요
-	SetCompositionScale(m_compositionScaleX, m_compositionScaleY);
+	_SetCompositionScale(m_compositionScaleX, m_compositionScaleY);
 
 	return true;
 }
-bool CD3DRenderer::CreateRTV_DSV_VP(UINT width, UINT height)
+bool CD3DRenderer::_CreateRTV_DSV_VP(UINT width, UINT height)
 {
 	assert(m_pSwapChain != nullptr && m_pSwapChainPanelNative != nullptr);
 	assert(m_pDevice != nullptr && width >= 1 && height >= 1);
@@ -344,7 +336,7 @@ bool CD3DRenderer::CreateRTV_DSV_VP(UINT width, UINT height)
 
 	// First Render target view and depth stencil view should be released
 	// also, swap chain's backbuffer pointer & depth stencil buffer's pointer should be released
-	CleanRTVandDSV();
+	_CleanRTVandDSV();
 
 	// Only is 0th index of swap chain readable & writable
 	// Load the swap chain's backbuffer into m_pBackBuffer newly
@@ -424,19 +416,19 @@ whenWrong:
 	return false;
 }
 
-void CD3DRenderer::SetRTVandDSVtoContext(float defaultColor[])
+void CD3DRenderer::_SetRTVandDSVtoContext(float defaultColor[])
 {
 	assert(m_pRTV != nullptr && m_pDSV != nullptr);
 
 	m_pDeviceContext->OMSetRenderTargets(1, m_pRTV.GetAddressOf(), m_pDSV.Get());
 	m_pDeviceContext->ClearRenderTargetView(m_pRTV.Get(), defaultColor);
 }
-void CD3DRenderer::SetVPToContext()
+void CD3DRenderer::_SetVPToContext()
 {
 	assert(m_vp.Width >= 1 && m_vp.Height >= 1);
 	m_pDeviceContext->RSSetViewports(1, &m_vp);
 }
-void CD3DRenderer::SetCompositionScale(float fCompositionScaleX, float fCompositionScaleY)
+void CD3DRenderer::_SetCompositionScale(float fCompositionScaleX, float fCompositionScaleY)
 {
 	assert(fCompositionScaleX > 0 && fCompositionScaleY > 0 && m_pSwapChain != nullptr);
 	DXGI_MATRIX_3X2_F inverseScale = { 0 };
@@ -450,7 +442,7 @@ void CD3DRenderer::SetCompositionScale(float fCompositionScaleX, float fComposit
 	pSwapChain2->SetMatrixTransform(&inverseScale);
 }
 
-bool CD3DRenderer::CreateShaders()
+bool CD3DRenderer::_CreateShaders()
 {
 	assert(m_pDevice != nullptr && m_pDeviceContext != nullptr);
 	HRESULT hr;
@@ -483,7 +475,7 @@ bool CD3DRenderer::CreateShaders()
 
 	return true;
 }
-bool CD3DRenderer::CreateInputLayout()
+bool CD3DRenderer::_CreateInputLayout()
 {
 	assert(m_pDevice != nullptr && m_pDeviceContext != nullptr);
 
@@ -516,7 +508,7 @@ bool CD3DRenderer::CreateInputLayout()
 	vsShaderByteCode = nullptr;
 	return true;
 }
-bool CD3DRenderer::CreateVertexBuffer(const IDrawable& object)
+bool CD3DRenderer::_CreateVertexBuffer(const IDrawable& object)
 {
 	HRESULT hr;
 	D3D11_BUFFER_DESC vertexBufferDesc = { 0 };
@@ -542,7 +534,7 @@ bool CD3DRenderer::CreateVertexBuffer(const IDrawable& object)
 
 	return true;
 }
-bool CD3DRenderer::CreateIndexBuffer(const IDrawable & object)
+bool CD3DRenderer::_CreateIndexBuffer(const IDrawable & object)
 {
 	HRESULT hr;
 	D3D11_BUFFER_DESC indexBufferDesc = { 0 };
@@ -567,7 +559,7 @@ bool CD3DRenderer::CreateIndexBuffer(const IDrawable & object)
 	return true;
 }
 
-bool CD3DRenderer::CreateConstantBuffer()
+bool CD3DRenderer::_CreateConstantBuffer()
 {
 	D3D11_BUFFER_DESC desc;
 	desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
@@ -586,7 +578,7 @@ bool CD3DRenderer::CreateConstantBuffer()
 	return true;
 }
 
-void CD3DRenderer::CleanRTVandDSV()
+void CD3DRenderer::_CleanRTVandDSV()
 {
 	assert(m_pDevice != nullptr && m_pDeviceContext != nullptr);
 	if (m_pRTV)
@@ -638,7 +630,7 @@ bool CD3DRenderer::UpdateForWindowSizeOrScaleChanged(const Windows::Foundation::
 
 	// Reset RenderTargetView
 	m_pDeviceContext->OMSetRenderTargets(0, NULL, NULL);
-	CleanRTVandDSV();
+	_CleanRTVandDSV();
 
 	m_outputSize.Width = max(m_logicalSize.Width * m_compositionScaleX, 1);
 	m_outputSize.Height = max(m_logicalSize.Height * m_compositionScaleY, 1);
@@ -666,9 +658,9 @@ bool CD3DRenderer::UpdateForWindowSizeOrScaleChanged(const Windows::Foundation::
 
 	float defaultColor[] = { 0,0,0,1 };
 
-	CreateRTV_DSV_VP(uiWidth, uiHeight);
-	SetRTVandDSVtoContext(defaultColor);
-	SetVPToContext();
+	_CreateRTV_DSV_VP(uiWidth, uiHeight);
+	_SetRTVandDSVtoContext(defaultColor);
+	_SetVPToContext();
 
 	hr = m_pSwapChain->SetRotation(DXGI_MODE_ROTATION_IDENTITY);
 	if (FAILED(hr))
@@ -676,21 +668,37 @@ bool CD3DRenderer::UpdateForWindowSizeOrScaleChanged(const Windows::Foundation::
 		__debugbreak();
 		return false;
 	}
+
+	// 창 크기(해상도) 등이 바뀔 때, Projection Matrix도 다시 계산한다.
 	auto ratio = (float)uiWidth / uiHeight;
 	DirectX::XMMATRIX p = DirectX::XMMatrixPerspectiveFovLH(0.25 * DirectX::XM_PI, ratio, 1.0f, 1000.0f);
 	DirectX::XMStoreFloat4x4(&m_projMatrix, p);
 
-	SetCompositionScale(m_compositionScaleX, m_compositionScaleY);
+	_SetCompositionScale(m_compositionScaleX, m_compositionScaleY);
 
 	return true;
 }
 
-void CD3DRenderer::MakeReadyForDrawableObject(const IDrawable & drawableObject)
+void CD3DRenderer::BeReadyForDrawableObject(const IDrawable & drawableObject)
 {
 	assert(m_bInitialized == true);
-	CreateVertexBuffer(drawableObject);
-	CreateIndexBuffer(drawableObject);
+	_CreateVertexBuffer(drawableObject);
+	_CreateIndexBuffer(drawableObject);
+
+	UINT stride = drawableObject.GetVertexStride();
+	UINT offset = 0;
+
+	m_pDeviceContext->IASetInputLayout(m_pVertexInputLayout.Get());
+	m_pDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	m_pDeviceContext->IASetVertexBuffers(0, 1, m_pVertexBuffer.GetAddressOf(), &stride, &offset);
+	m_pDeviceContext->IASetIndexBuffer(m_pIndexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
+
+	m_pDeviceContext->VSSetShader(m_pVertexShader.Get(), nullptr, 0);
+	m_pDeviceContext->VSSetConstantBuffers(0, 1, m_pConstantBuffer.GetAddressOf());
+	m_pDeviceContext->PSSetShader(m_pPixelShader.Get(), nullptr, 0);
 }
+
+// 드로잉 3종세트들 
 
 void CD3DRenderer::BeginDraw()
 {
@@ -703,7 +711,34 @@ void CD3DRenderer::BeginDraw()
 	m_pDeviceContext->ClearRenderTargetView(m_pRTV.Get(), rgba);
 	m_pDeviceContext->ClearDepthStencilView(m_pDSV.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
 }
-void CD3DRenderer::Present()
+void CD3DRenderer::Draw(const IDrawable & drawableObject)
+{
+	assert(m_bInitialized == true);
+
+	struct MatrixStruct
+	{
+		float worldMatrix[4][4];
+		float viewMatrix[4][4];
+		float projMatrix[4][4];
+	};
+
+	auto worldMatrices = drawableObject.GetWorldMatrices();
+	auto cameraMatrix = drawableObject.GetCameraMatrix();
+
+	for (unsigned int i = 0; i < drawableObject.GetNumberOfDrawableObject(); ++i)
+	{
+		auto data = drawableObject[i];
+		MatrixStruct ooo;
+		
+		memcpy(ooo.worldMatrix, &worldMatrices[i], sizeof(float) * 16);
+		memcpy(ooo.viewMatrix, &cameraMatrix, sizeof(float) * 16);
+		memcpy(ooo.projMatrix, &m_projMatrix, sizeof(float) * 16);
+
+		m_pDeviceContext->UpdateSubresource(m_pConstantBuffer.Get(), 0, nullptr, &ooo, 0, 0);
+		m_pDeviceContext->DrawIndexed(data.indexCount, data.startIndex, data.baseVertexLocation);
+	}
+}
+void CD3DRenderer::EndDraw() const
 {
 	assert(m_bInitialized == true);
 	UINT uiSyncInterval = 0;
@@ -722,70 +757,6 @@ void CD3DRenderer::Present()
 			__debugbreak();
 		}
 	}
-}
-void CD3DRenderer::Draw()
-{
-	assert(m_bInitialized == true);
-	m_pDeviceContext->IASetInputLayout(m_pVertexInputLayout.Get());
-	m_pDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-	UINT stride = sizeof(float) * 3;
-	UINT offset = 0;
-
-	m_pDeviceContext->IASetVertexBuffers(0, 1, m_pVertexBuffer.GetAddressOf(), &stride, &offset);
-
-	m_pDeviceContext->VSSetShader(m_pVertexShader.Get(), nullptr, 0);
-	m_pDeviceContext->PSSetShader(m_pPixelShader.Get(), nullptr, 0);
-	m_pDeviceContext->Draw(3, 0);
-}
-
-void CD3DRenderer::Draw(const IDrawable & drawableObject)
-{
-	assert(m_bInitialized == true);
-	/*CreateVertexBuffer(drawableObject);
-	CreateIndexBuffer(drawableObject);*/
-
-	UINT stride = drawableObject.GetVertexStride();
-	UINT offset = 0;
-
-	struct MatrixStruct
-	{
-		float worldMatrix[4][4];
-		float viewMatrix[4][4];
-		float projMatrix[4][4];
-	};
-
-	{
-		m_pDeviceContext->IASetInputLayout(m_pVertexInputLayout.Get());
-		m_pDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-		m_pDeviceContext->IASetVertexBuffers(0, 1, m_pVertexBuffer.GetAddressOf(), &stride, &offset);
-		m_pDeviceContext->IASetIndexBuffer(m_pIndexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
-
-		m_pDeviceContext->VSSetShader(m_pVertexShader.Get(), nullptr, 0);
-		m_pDeviceContext->VSSetConstantBuffers(0, 1, m_pConstantBuffer.GetAddressOf());
-		m_pDeviceContext->PSSetShader(m_pPixelShader.Get(), nullptr, 0);
-
-	}
-
-	auto worldMatrices = drawableObject.GetWorldMatrices();
-	auto cameraMatrix = drawableObject.GetCameraMatrix();
-
-	for (unsigned int i = 0; i < drawableObject.GetNumberOfDrawableObject(); ++i)
-	{
-		auto data = drawableObject[i];
-		MatrixStruct ooo;
-		
-		memcpy(ooo.worldMatrix, &worldMatrices[i], sizeof(float) * 16);
-		memcpy(ooo.viewMatrix, &cameraMatrix, sizeof(float) * 16);
-		memcpy(ooo.projMatrix, &m_projMatrix, sizeof(float) * 16);
-
-		m_pDeviceContext->UpdateSubresource(m_pConstantBuffer.Get(), 0, nullptr, &ooo, 0, 0);
-		m_pDeviceContext->DrawIndexed(data.indexCount, data.startIndex, data.baseVertexLocation);
-	}
-}
-
-void CD3DRenderer::EndDraw() const
-{
 }
 
 CD3DRenderer::CD3DRenderer()
@@ -815,5 +786,5 @@ CD3DRenderer::CD3DRenderer()
 CD3DRenderer::~CD3DRenderer()
 {
 	m_bInitialized = false;
-	CleanRTVandDSV();
+	_CleanRTVandDSV();
 }
