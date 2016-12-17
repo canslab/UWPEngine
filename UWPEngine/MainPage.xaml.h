@@ -35,6 +35,8 @@ namespace UWPEngine
 		CGameObject *m_pObject4;
 		CGameObject *m_pObject5;
 
+		Windows::Foundation::Point m_pressedPoint;
 		bool m_bPressed;
+		void OnKeyDown(Windows::UI::Core::CoreWindow ^sender, Windows::UI::Core::KeyEventArgs ^args);
 	};
 }

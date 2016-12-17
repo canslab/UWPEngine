@@ -116,6 +116,12 @@
     <Image Include="Assets\BMW.obj">
       <Filter>Assets</Filter>
     </Image>
+    <Image Include="Assets\arrow.obj">
+      <Filter>Assets</Filter>
+    </Image>
+    <Image Include="Assets\girl.obj">
+      <Filter>Assets</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest" />
@@ -133,10 +139,5 @@
     <FxCompile Include="Engine Sources\vertex.hlsl">
       <Filter>GameEngine\Shaders</Filter>
     </FxCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <Object Include="Assets\arrow.obj">
-      <Filter>Assets</Filter>
-    </Object>
   </ItemGroup>
 </Project>

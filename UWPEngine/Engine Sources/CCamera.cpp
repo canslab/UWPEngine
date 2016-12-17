@@ -89,6 +89,13 @@ void CCamera::MovePositionByOffsetZ(float dz)
 	m_positionW.z += dz;
 }
 
+void CCamera::MoveTargetPositionByOffset(float dx, float dy, float dz)
+{
+	m_targetW.x += dx;
+	m_targetW.y += dy;
+	m_targetW.z += dz;
+}
+
 XMFLOAT4X4 CCamera::GetViewMatrix() const
 {
 	XMFLOAT4X4 retMatrix;

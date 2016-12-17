@@ -26,6 +26,8 @@ public:
 	void MovePositionByOffsetX(float dx);
 	void MovePositionByOffsetY(float dy);
 	void MovePositionByOffsetZ(float dz);
+
+	void MoveTargetPositionByOffset(float dx, float dy, float dz);
 	
 	DirectX::XMFLOAT4X4 GetViewMatrix() const;
 
