@@ -685,6 +685,12 @@ bool CD3DRenderer::UpdateForWindowSizeOrScaleChanged(const Windows::Foundation::
 	return true;
 }
 
+void CD3DRenderer::MakeReadyForDrawableObject(const IDrawable & drawableObject)
+{
+	CreateVertexBuffer(drawableObject);
+	CreateIndexBuffer(drawableObject);
+}
+
 void CD3DRenderer::BeginDraw()
 {
 	assert(m_bInitialized == true);
@@ -735,8 +741,8 @@ void CD3DRenderer::Draw()
 void CD3DRenderer::Draw(const IDrawable & drawableObject)
 {
 	assert(m_bInitialized == true);
-	CreateVertexBuffer(drawableObject);
-	CreateIndexBuffer(drawableObject);
+	/*CreateVertexBuffer(drawableObject);
+	CreateIndexBuffer(drawableObject);*/
 
 	UINT stride = drawableObject.GetVertexStride();
 	UINT offset = 0;

@@ -67,7 +67,9 @@ void CGameEngine::Process() const
 
 void CGameEngine::SetWorld(CGameWorld * pWorld)
 {
-	assert(pWorld != nullptr);
-	
+	assert (pWorld != nullptr);
+	assert (m_pRenderer != nullptr);
 	m_pGameWorld = pWorld;
+
+	m_pRenderer->MakeReadyForDrawableObject(*pWorld);
 }

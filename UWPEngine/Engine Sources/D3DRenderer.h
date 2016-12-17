@@ -8,11 +8,14 @@ class CD3DRenderer
 public:
 	bool Initialize(Windows::UI::Xaml::Controls::SwapChainPanel^ swapChainPanel);
 	bool UpdateForWindowSizeOrScaleChanged(const Windows::Foundation::Size *newSize, float xScale, float yScale);
+	
+	void MakeReadyForDrawableObject(const IDrawable& drawableObject);
 	void BeginDraw();
 	void Draw();
 	void Draw(const IDrawable& drawableObject);
 	void EndDraw() const;
 	void Present();
+
 
 public:
 	CD3DRenderer();
