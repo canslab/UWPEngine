@@ -243,6 +243,8 @@ bool CGameWorld::_SaveToGlobalBuffers(CGameObject *pGameObject)
 				}
 			}
 		}
+
+		meshFileStream.close();
 		m_lookUpTable[pGameObject->GetMeshFileName()] = { addedIndexCount, m_indicesOfGlobalIndexBuffer.back(), m_indicesOfGlobalVertexBuffer.back() };
 		
 		m_nIndexCount += addedIndexCount;

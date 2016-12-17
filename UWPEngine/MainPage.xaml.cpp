@@ -19,6 +19,7 @@ using namespace Windows::UI::Xaml::Input;
 using namespace Windows::UI::Xaml::Media;
 using namespace Windows::UI::Xaml::Navigation;
 using namespace Windows::UI::Core;
+using namespace Windows::UI::Popups;
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
@@ -48,9 +49,16 @@ MainPage::MainPage()
 	if (bInitResult == false)
 	{
 		// 사용자에게 잘못되었다고 알려준다.
+		MessageDialog ^msg = ref new MessageDialog("There is no DirectX 11 compatible graphic card...");
+		concurrency::create_task(msg->ShowAsync()).then([](Windows::UI::Popups::IUICommand^ command)
+		{
+			// Windows Phone에서도 종료될지는 모르곘음..
+			exit(1);
+		});
+		return;
 	}
-
-	// 오브젝트 1개를 만든다.. 
+	
+	// 오브젝트 1개를 만든다..
 	m_pObject1 = new CGameObject();
 	bInitResult = m_pObject1->Initialize("./Assets/BMW.obj");
 	if (bInitResult)
@@ -59,6 +67,8 @@ MainPage::MainPage()
 	}
 	m_pObject2 = new CGameObject();
 	bInitResult = m_pObject2->Initialize("./Assets/BMW.obj");
+	m_pObject2->SetPositionW({ -50, 0, 0, 1 });
+
 	if (bInitResult)
 	{
 		// Asset에서 불러오는 데 실패했다는 이야기.
@@ -79,7 +89,7 @@ MainPage::MainPage()
 	}
 
 	m_pObject5 = new CGameObject();
-	bInitResult = m_pObject5->Initialize("./Assets/BMW.obj");
+	bInitResult = m_pObject5->Initialize("./Assets/arrow.obj");
 	if (bInitResult)
 	{
 		// Asset에서 불러오는 데 실패했다는 이야기.
@@ -164,15 +174,11 @@ void UWPEngine::MainPage::OnPointerPressed(Windows::UI::Core::CoreWindow ^ coreW
 	{
 		curXPos += 0.1f;
 	}
-	//m_pObject1->SetPositionW({ curXPos, 0, 0, 1 });
-	//m_pWorld->Update(m_pObject1);
 	m_bPressed = true;
-	//m_pObject1->SetRotation({ curXPos, 0, 0 });
 
-
-	/*static float curZ = -5;
+	static float curZ = -5;
 	auto& camera = m_pWorld->GetCamera();
-	camera.MovePositionByOffsetZ(-1);*/
+	camera.MovePositionByOffsetZ(-1);
 }
 
 void UWPEngine::MainPage::OnPointerMoved(Windows::UI::Core::CoreWindow ^ coreWindow, Windows::UI::Core::PointerEventArgs ^ args)

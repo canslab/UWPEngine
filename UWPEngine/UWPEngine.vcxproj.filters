@@ -113,6 +113,9 @@
     <Image Include="Assets\teapot.obj">
       <Filter>Assets</Filter>
     </Image>
+    <Image Include="Assets\BMW.obj">
+      <Filter>Assets</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest" />
@@ -132,7 +135,7 @@
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
-    <Object Include="Assets\BMW.obj">
+    <Object Include="Assets\arrow.obj">
       <Filter>Assets</Filter>
     </Object>
   </ItemGroup>
