@@ -8,19 +8,12 @@ public:
 	virtual ~CGameObject();
 
 public:
-	//unsigned int				GetVertexByteSize() const;
-	//unsigned int				GetVertexCount() const;
-	//void*						GetAddressOfVertexArray() const;
-	//unsigned int				GetIndexCount() const;
-	//unsigned int				GetIndexByteSize() const;
-	//void*						GetAddressOfIndexArray() const;
-	
 	DirectX::XMFLOAT4X4			GetWorldMatrix() const;
 
 	bool						Initialize(std::string meshFileName);
-	void						SetPositionW(const std::vector<float> &positionW);
-	void						SetScale(const std::vector<float> &scales);
-	void						SetRotation(const std::vector<float> &rotationAngles);
+	void						SetPositionW(float xPos, float yPos, float zPos);
+	void						SetScale(float xScale, float yScale, float zScale);
+	void						SetRotation(float xRotAngle, float yRotAngle,float zRotAngle);
 
 	bool						IsInitalized() const;
 	DirectX::XMFLOAT4			GetPosition() const;

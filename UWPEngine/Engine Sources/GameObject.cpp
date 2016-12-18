@@ -71,29 +71,25 @@ bool CGameObject::Initialize(string meshFileName)
 	return m_bInitialized;
 }
 
-void CGameObject::SetPositionW(const std::vector<float>& positionW)
+void CGameObject::SetPositionW(float xPos, float yPos, float zPos)
 {
-	assert(m_bInitialized == true && positionW.size() == 4 && positionW[3] == 1);
-
-	m_transform.x = positionW[0];
-	m_transform.y = positionW[1];
-	m_transform.z = positionW[2];
+	m_transform.x = xPos;
+	m_transform.y = yPos;
+	m_transform.z = zPos;
 }
 
-void CGameObject::SetScale(const std::vector<float>& scales)
+void CGameObject::SetScale(float xScale, float yScale, float zScale)
 {
-	assert(m_bInitialized == true && scales.size() == 3);
-	m_transform.xScale = scales[0];
-	m_transform.yScale = scales[1];
-	m_transform.zScale = scales[2];
+	m_transform.xScale = xScale;
+	m_transform.yScale = yScale;
+	m_transform.zScale = zScale;
 }
 
-void CGameObject::SetRotation(const std::vector<float>& rotationAngles)
+void CGameObject::SetRotation(float xRotAngle, float yRotAngle, float zRotAngle)
 {
-	assert(m_bInitialized == true && rotationAngles.size() == 3);
-	m_transform.xRotAngle = rotationAngles[0];
-	m_transform.yRotAngle = rotationAngles[1];
-	m_transform.zRotAngle = rotationAngles[2];
+	m_transform.xRotAngle = xRotAngle;
+	m_transform.yRotAngle = yRotAngle;
+	m_transform.zRotAngle = zRotAngle;
 }
 
 bool CGameObject::IsInitalized() const
@@ -127,9 +123,9 @@ XMFLOAT4X4 CGameObject::GetWorldMatrix() const
 	auto rotationMatrix = XMMatrixRotationX(m_transform.xRotAngle) * XMMatrixRotationY(m_transform.yRotAngle) *XMMatrixRotationZ(m_transform.zRotAngle);
 	auto translationMatrix = XMMatrixTranslation(m_transform.x, m_transform.y, m_transform.z);
 
-	// S * R * T
+	// World Matrix == S * R * T
 	auto resultWorldMatrix = scalingMatrix * rotationMatrix * translationMatrix;
 	XMStoreFloat4x4(&retMatrix, resultWorldMatrix);
-	
+
 	return retMatrix;
 }

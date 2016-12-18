@@ -22,10 +22,9 @@ XMFLOAT4 CCamera::GetPositionW() const
 
 bool CCamera::Initialize(const std::vector<float>& positionW, const std::vector<float>& targetPositionW, const std::vector<float>& upVectorW)
 {
-	assert(positionW.size() == 4 && targetPositionW.size() == 4 && upVectorW.size() == 4);
-	assert(positionW[3] == 1 && targetPositionW[3] == 1 && upVectorW[3] == 0);
+	assert(positionW.size() == 3 && targetPositionW.size() == 3 && upVectorW.size() == 3);
 
-	if (positionW.size() == 4 && targetPositionW.size() == 4 && upVectorW.size() == 4)
+	if (positionW.size() == 3 && targetPositionW.size() == 3 && upVectorW.size() == 3)
 	{
 		SetPositionW(positionW[0], positionW[1], positionW[2]);
 		SetTargetPositionW(targetPositionW[0], targetPositionW[1], targetPositionW[2]);

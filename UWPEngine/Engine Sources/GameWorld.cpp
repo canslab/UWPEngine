@@ -18,7 +18,7 @@ CGameWorld::CGameWorld() :
 	m_nIndexCount(0)
 {
 
-}	
+}
 
 CGameWorld::~CGameWorld()
 {
@@ -29,7 +29,7 @@ CGameWorld::~CGameWorld()
 bool CGameWorld::Initialize()
 {
 	assert(m_bInitialized == false);
-	m_bInitialized = m_camera.Initialize({ 0,0,0 ,1 }, { 0,0,0,1 }, { 0,1,0,0 });
+	m_bInitialized = m_camera.Initialize({ 0,0,0 }, { 0,0,0 }, { 0,1,0 });
 
 	m_indicesOfGlobalIndexBuffer.push_back(0);
 	m_indicesOfGlobalVertexBuffer.push_back(0);
@@ -50,7 +50,7 @@ bool CGameWorld::AddObject(CGameObject * pGameObject)
 
 	// finally, game object should be registered to this world.
 	m_objectList.push_back(pGameObject);
-	
+
 	// add pGameObject's world matrix into m_objectWorldMatrices
 	m_objectWorldMatrices.push_back(pGameObject->GetWorldMatrix());
 
@@ -96,7 +96,7 @@ const void* CGameWorld::GetContVertexArray() const
 {
 	assert(m_bInitialized == true);
 	assert(m_globalVertexBufferInSystemMemory.size() >= 1);
-	
+
 	return &(m_globalVertexBufferInSystemMemory[0]);
 }
 
@@ -183,7 +183,7 @@ bool CGameWorld::_SaveToGlobalBuffers(CGameObject *pGameObject)
 	auto meshFileName = pGameObject->GetMeshFileName();
 
 	// 기존에 pMeshFileName을 로드한 적이 있거나 매쉬파일의 이름이 없다면 false를 리턴!
-	if (m_meshFileNameSet.count(meshFileName) == 1 )
+	if (m_meshFileNameSet.count(meshFileName) == 1)
 	{
 		return true;
 	}
@@ -246,7 +246,7 @@ bool CGameWorld::_SaveToGlobalBuffers(CGameObject *pGameObject)
 
 		meshFileStream.close();
 		m_lookUpTable[pGameObject->GetMeshFileName()] = { addedIndexCount, m_indicesOfGlobalIndexBuffer.back(), m_indicesOfGlobalVertexBuffer.back() };
-		
+
 		m_nIndexCount += addedIndexCount;
 		m_indicesOfGlobalVertexBuffer.push_back(m_indicesOfGlobalVertexBuffer.back() + m_globalVertexBufferInSystemMemory.size());
 		m_indicesOfGlobalIndexBuffer.push_back(m_indicesOfGlobalIndexBuffer.back() + m_globalIndexBufferInSystemMemory.size());
@@ -308,7 +308,7 @@ bool CGameWorld::Update(CGameObject * pUpdatedGameObject)
 	{
 		goto FAILURE;
 	}
-	
+
 	// update (objectIndex)th world Matrix 
 	m_objectWorldMatrices[objectIndex] = pUpdatedGameObject->GetWorldMatrix();
 

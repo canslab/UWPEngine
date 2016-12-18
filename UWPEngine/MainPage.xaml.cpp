@@ -68,8 +68,8 @@ MainPage::MainPage()
 	}
 	m_pObject2 = new CGameObject();
 	bInitResult = m_pObject2->Initialize("./Assets/BMW.obj");
-	m_pObject2->SetScale({ 0.2f, 0.2f, 0.2f });
-	m_pObject2->SetPositionW({ -50, 0, 0, 1 });
+	m_pObject2->SetScale(0.2, 0.2, 0.2);
+	m_pObject2->SetPositionW(-50, 0, 0);
 
 	if (bInitResult)
 	{
@@ -114,10 +114,10 @@ void UWPEngine::MainPage::OnUpdate(Object ^ sender, Object ^ args)
 		m_pTimer->Tick();
 		auto totalTime = m_pTimer->GetTotalTime();
 
-		m_pObject1->SetRotation({ 0, totalTime , totalTime });
-		m_pObject2->SetRotation({ 0, totalTime * 2, 0 });
+		m_pObject1->SetRotation(0, totalTime, totalTime);
+		m_pObject2->SetRotation(0, 2 * totalTime, 0);
 		m_pWorld->Update(m_pObject1);
-		m_pWorld->Update(m_pObject2);
+		m_pWorld->Update(m_pObject2); 
 
 		// Render
 		m_pEngine->Process();
