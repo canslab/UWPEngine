@@ -76,12 +76,12 @@ bool CD3DRenderer::Initialize(Windows::UI::Xaml::Controls::SwapChainPanel ^ swap
 		return false;
 	}
 
-	bResult = _CreateInputLayout();
+	/*bResult = _CreateInputLayout();
 	if (bResult == false)
 	{
 		__debugbreak();
 		return false;
-	}
+	}*/
 
 	bResult = _CreateConstantBuffer();
 	if (bResult == false)
@@ -475,37 +475,23 @@ bool CD3DRenderer::_CreateShaders()
 
 	return true;
 }
-bool CD3DRenderer::_CreateInputLayout()
+
+bool CD3DRenderer::_CreateInputLayout(const IDrawable & object)
 {
 	assert(m_pDevice != nullptr && m_pDeviceContext != nullptr);
-
+	
 	HRESULT hr;
 	Array<byte>^ vsShaderByteCode = JHUtil::LoadShaderFile("vertex.cso");
 
-	// before creating input layout, if there is something that points from m_pVertexInputLayout
-	// release it before creating input layout.
-	if (m_pVertexInputLayout)
-	{
-		m_pVertexInputLayout.Reset();
-		m_pVertexInputLayout = nullptr;
-	}
+	auto descArray = object.GetInputElementDescArray();
 
-	// describe how vertex data looks like
-	D3D11_INPUT_ELEMENT_DESC desc[] =
-	{
-		{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 }
-	};
-
-	// check whether input signature of vertex shader is identical to the description of the input element
-	hr = m_pDevice->CreateInputLayout(desc, ARRAYSIZE(desc), vsShaderByteCode->Data, vsShaderByteCode->Length, &m_pVertexInputLayout);
+	hr = m_pDevice->CreateInputLayout(&descArray[0], (UINT)descArray.size(), vsShaderByteCode->Data, vsShaderByteCode->Length, &m_pVertexInputLayout);
+	vsShaderByteCode = nullptr;
 	if (FAILED(hr))
 	{
 		__debugbreak();
 		return false;
 	}
-
-	// deallocate resources manually
-	vsShaderByteCode = nullptr;
 	return true;
 }
 bool CD3DRenderer::_CreateVertexBuffer(const IDrawable& object)
@@ -682,9 +668,11 @@ bool CD3DRenderer::UpdateForWindowSizeOrScaleChanged(const Windows::Foundation::
 void CD3DRenderer::BeReadyForDrawableObject(const IDrawable & drawableObject)
 {
 	assert(m_bInitialized == true);
+	_CreateInputLayout(drawableObject);
 	_CreateVertexBuffer(drawableObject);
 	_CreateIndexBuffer(drawableObject);
 
+	// Vertex Buffer에서 Vertex 하나당 몇 바이트 인지 지정해줘야 함.
 	UINT stride = drawableObject.GetVertexStride();
 	UINT offset = 0;
 

@@ -27,6 +27,9 @@ public:
 	virtual unsigned int								GetNumberOfDrawableObject() const = 0;
 	virtual DirectX::XMFLOAT4X4							GetCameraMatrix() const = 0;
 
+	// element draw information accessor
 	virtual DrawInfo									operator[](UINT idx) const = 0;
+	
+	// Get InputLayout
+	virtual std::vector<D3D11_INPUT_ELEMENT_DESC>		GetInputElementDescArray() const = 0;
 };
-

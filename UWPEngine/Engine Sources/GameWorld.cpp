@@ -11,10 +11,10 @@ CGameWorld::CGameWorld() :
 	m_objectList(0),
 	m_objectWorldMatrices(0),
 	m_bInitialized(false),
-	m_globalVertexBufferInSystemMemory(0),
-	m_globalIndexBufferInSystemMemory(0),
-	m_indicesOfGlobalVertexBuffer(0),
-	m_indicesOfGlobalIndexBuffer(0),
+	m_gVBInSystemMemory(0),
+	m_gIBInSystemMemory(0),
+	m_gVBIndices(0),
+	m_gIBIndicies(0),
 	m_nIndexCount(0)
 {
 
@@ -31,8 +31,8 @@ bool CGameWorld::Initialize()
 	assert(m_bInitialized == false);
 	m_bInitialized = m_camera.Initialize({ 0,0,0 }, { 0,0,0 }, { 0,1,0 });
 
-	m_indicesOfGlobalIndexBuffer.push_back(0);
-	m_indicesOfGlobalVertexBuffer.push_back(0);
+	m_gIBIndicies.push_back(0);
+	m_gVBIndices.push_back(0);
 	return m_bInitialized;
 }
 
@@ -56,8 +56,8 @@ bool CGameWorld::AddObject(CGameObject * pGameObject)
 
 	// the size of our vectors should be equal to the # of their contents.
 	m_objectList.shrink_to_fit();
-	m_indicesOfGlobalVertexBuffer.shrink_to_fit();
-	m_indicesOfGlobalIndexBuffer.shrink_to_fit();
+	m_gVBIndices.shrink_to_fit();
+	m_gIBIndicies.shrink_to_fit();
 	m_objectWorldMatrices.shrink_to_fit();
 	return true;
 }
@@ -83,29 +83,29 @@ unsigned int CGameWorld::GetNumberOfDrawableObject() const
 const std::vector<unsigned int>& CGameWorld::GetIndicesOfVertexBuffer() const
 {
 	assert(m_bInitialized == true);
-	return m_indicesOfGlobalVertexBuffer;
+	return m_gVBIndices;
 }
 
 const std::vector<unsigned int>& CGameWorld::GetIndicesOfIndexBuffer() const
 {
 	assert(m_bInitialized == true);
-	return m_indicesOfGlobalIndexBuffer;
+	return m_gIBIndicies;
 }
 
 const void* CGameWorld::GetContVertexArray() const
 {
 	assert(m_bInitialized == true);
-	assert(m_globalVertexBufferInSystemMemory.size() >= 1);
+	assert(m_gVBInSystemMemory.size() >= 1);
 
-	return &(m_globalVertexBufferInSystemMemory[0]);
+	return &(m_gVBInSystemMemory[0]);
 }
 
 const void* CGameWorld::GetContIndexArray() const
 {
 	assert(m_bInitialized == true);
-	assert(m_globalIndexBufferInSystemMemory.size() >= 1);
+	assert(m_gIBInSystemMemory.size() >= 1);
 
-	return &(m_globalIndexBufferInSystemMemory[0]);
+	return &(m_gIBInSystemMemory[0]);
 }
 
 unsigned int CGameWorld::GetIndexCount() const
@@ -117,13 +117,13 @@ unsigned int CGameWorld::GetIndexCount() const
 unsigned int CGameWorld::GetTotalVertexBufferSizeInByte() const
 {
 	assert(m_bInitialized == true);
-	return m_globalVertexBufferInSystemMemory.size() * sizeof(CGameObject::ModelVertex);
+	return m_gVBInSystemMemory.size() * sizeof(CGameObject::ModelVertex);
 }
 
 unsigned int CGameWorld::GetTotalIndexBufferSizeInByte() const
 {
 	assert(m_bInitialized == true);
-	return m_globalIndexBufferInSystemMemory.size() * sizeof(UINT);
+	return m_gIBInSystemMemory.size() * sizeof(UINT);
 }
 
 unsigned int CGameWorld::GetVertexStride() const
@@ -154,6 +154,20 @@ IDrawable::DrawInfo CGameWorld::operator[](UINT idx) const
 	return retInfo;
 }
 
+std::vector<D3D11_INPUT_ELEMENT_DESC> CGameWorld::GetInputElementDescArray() const
+{
+	vector<D3D11_INPUT_ELEMENT_DESC> retVector;
+	
+	// describe how vertex data looks like
+	retVector.push_back(
+		
+	{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 }
+	
+	);
+
+	return retVector;
+}
+
 void CGameWorld::_ReleaseObjectList()
 {
 	assert(m_bInitialized == true);
@@ -182,15 +196,9 @@ bool CGameWorld::_SaveToGlobalBuffers(CGameObject *pGameObject)
 
 	auto meshFileName = pGameObject->GetMeshFileName();
 
-	// 기존에 pMeshFileName을 로드한 적이 있거나 매쉬파일의 이름이 없다면 false를 리턴!
-	if (m_meshFileNameSet.count(meshFileName) == 1)
+	if (m_lookUpTable.count(meshFileName) == 1)
 	{
 		return true;
-	}
-	else
-	{
-		// 기존에 로드한 적이 없는 신규 매쉬파일이라면, 장부에 등록!
-		m_meshFileNameSet.insert(meshFileName);
 	}
 
 	UINT addedIndexCount = 0;
@@ -217,7 +225,7 @@ bool CGameWorld::_SaveToGlobalBuffers(CGameObject *pGameObject)
 					lineStream >> x >> y >> z;
 					lineStream >> carriageReturn;
 
-					m_globalVertexBufferInSystemMemory.push_back({ x,y,z });
+					m_gVBInSystemMemory.push_back({ x,y,z });
 				}
 				else if (token == "f")
 				{
@@ -230,9 +238,9 @@ bool CGameWorld::_SaveToGlobalBuffers(CGameObject *pGameObject)
 					lineStream >> vertexIndex3 >> ignore;
 					lineStream >> carriageReturn;
 
-					m_globalIndexBufferInSystemMemory.push_back(vertexIndex1 - 1);
-					m_globalIndexBufferInSystemMemory.push_back(vertexIndex2 - 1);
-					m_globalIndexBufferInSystemMemory.push_back(vertexIndex3 - 1);
+					m_gIBInSystemMemory.push_back(vertexIndex1 - 1);
+					m_gIBInSystemMemory.push_back(vertexIndex2 - 1);
+					m_gIBInSystemMemory.push_back(vertexIndex3 - 1);
 
 					addedIndexCount += 3;
 				}
@@ -245,11 +253,11 @@ bool CGameWorld::_SaveToGlobalBuffers(CGameObject *pGameObject)
 		}
 
 		meshFileStream.close();
-		m_lookUpTable[pGameObject->GetMeshFileName()] = { addedIndexCount, m_indicesOfGlobalIndexBuffer.back(), m_indicesOfGlobalVertexBuffer.back() };
+		m_lookUpTable[pGameObject->GetMeshFileName()] = { addedIndexCount, m_gIBIndicies.back(), m_gVBIndices.back() };
 
 		m_nIndexCount += addedIndexCount;
-		m_indicesOfGlobalVertexBuffer.push_back(m_indicesOfGlobalVertexBuffer.back() + m_globalVertexBufferInSystemMemory.size());
-		m_indicesOfGlobalIndexBuffer.push_back(m_indicesOfGlobalIndexBuffer.back() + m_globalIndexBufferInSystemMemory.size());
+		m_gVBIndices.push_back(m_gVBIndices.back() + m_gVBInSystemMemory.size());
+		m_gIBIndicies.push_back(m_gIBIndicies.back() + m_gIBInSystemMemory.size());
 	}
 	else
 	{

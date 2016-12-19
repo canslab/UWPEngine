@@ -17,19 +17,20 @@ public:
 	CCamera& GetCamera();
 
 	// IDrawable Implementation
-	virtual unsigned int								GetNumberOfDrawableObject() const;
-	virtual const void*									GetContVertexArray() const;
-	virtual const void*									GetContIndexArray() const;
-	virtual unsigned int								GetIndexCount() const;
-	virtual const std::vector<unsigned int>&			GetIndicesOfVertexBuffer() const;
-	virtual const std::vector<unsigned int>&			GetIndicesOfIndexBuffer() const;
-	virtual unsigned int 								GetTotalVertexBufferSizeInByte() const;
-	virtual unsigned int								GetTotalIndexBufferSizeInByte() const;
-	virtual unsigned int								GetVertexStride() const;
-	virtual const std::vector<DirectX::XMFLOAT4X4>&		GetWorldMatrices() const;
-	virtual DirectX::XMFLOAT4X4							GetCameraMatrix() const;
+	unsigned int										GetNumberOfDrawableObject()			const override;
+	const void*											GetContVertexArray()				const override;
+	const void*											GetContIndexArray()					const override;
+	unsigned int										GetIndexCount()						const override;
+	const std::vector<unsigned int>&					GetIndicesOfVertexBuffer()			const override;
+	const std::vector<unsigned int>&					GetIndicesOfIndexBuffer()			const override;
+	unsigned int 										GetTotalVertexBufferSizeInByte()	const override;
+	unsigned int										GetTotalIndexBufferSizeInByte()		const override;
+	unsigned int										GetVertexStride()					const override;
+	const std::vector<DirectX::XMFLOAT4X4>&				GetWorldMatrices()					const override;
+	DirectX::XMFLOAT4X4									GetCameraMatrix()					const override;
 
-	virtual DrawInfo									operator[](UINT idx) const;
+	virtual DrawInfo									operator[](UINT idx)				const override;
+	virtual std::vector<D3D11_INPUT_ELEMENT_DESC>		GetInputElementDescArray()			const override;
 
 public:
 	CGameWorld();
@@ -42,7 +43,6 @@ protected:
 	void _ReleaseObjectList();
 	bool _SaveToGlobalBuffers(CGameObject *pGameObject);
 
-	std::set<std::string> m_meshFileNameSet;
 protected:
 
 	CCamera													m_camera;
@@ -50,10 +50,10 @@ protected:
 	std::vector<DirectX::XMFLOAT4X4>						m_objectWorldMatrices;
 	bool													m_bInitialized;
 
-	std::vector<CGameObject::ModelVertex>					m_globalVertexBufferInSystemMemory;
-	std::vector<UINT>										m_globalIndexBufferInSystemMemory;
-	std::vector<unsigned int>								m_indicesOfGlobalVertexBuffer;
-	std::vector<unsigned int>								m_indicesOfGlobalIndexBuffer;
+	std::vector<CGameObject::ModelVertex>					m_gVBInSystemMemory;
+	std::vector<UINT>										m_gIBInSystemMemory;
+	std::vector<UINT>										m_gVBIndices;
+	std::vector<UINT>										m_gIBIndicies;
 
 	std::map<std::string, DrawInfo>							m_lookUpTable;
 	unsigned int											m_nIndexCount;

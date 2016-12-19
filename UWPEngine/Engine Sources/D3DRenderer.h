@@ -38,7 +38,7 @@ private:
 	void _SetVPToContext();
 
 	bool _CreateShaders();
-	bool _CreateInputLayout();
+	bool _CreateInputLayout(const IDrawable& object);
 	bool _CreateVertexBuffer(const IDrawable& object);
 	bool _CreateIndexBuffer(const IDrawable& object);
 	bool _CreateConstantBuffer();
