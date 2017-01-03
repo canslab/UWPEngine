@@ -52,7 +52,7 @@ void CGameEngine::UpdateForWindowSizeOrScaleChanged(const Windows::Foundation::S
 	m_pRenderer->UpdateForWindowSizeOrScaleChanged(pNewLogicalSize, fCompositionScaleX, fCompositionScaleY);
 }
 
-void CGameEngine::Process() const
+void CGameEngine::UpdateContents() const
 {
 	assert(m_pRenderer != nullptr);
 	
@@ -60,9 +60,14 @@ void CGameEngine::Process() const
 	if (m_pGameWorld)
 	{
 		m_pRenderer->Draw(*m_pGameWorld);
-		bool bTest = m_pRenderer->DrawText(0, 0, 100, 100, L"Gabriola", 96.0f, L"Hi!");
 	}
 	m_pRenderer->EndDraw();	
+}
+
+void CGameEngine::Present() const
+{
+	assert(m_pRenderer != nullptr);
+	m_pRenderer->Present();
 }
 
 void CGameEngine::SetWorld(CGameWorld * pWorld)
@@ -75,7 +80,9 @@ void CGameEngine::SetWorld(CGameWorld * pWorld)
 	
 }
 
-void CGameEngine::RenderFont(int x, int y, int width, int height, const wchar_t* pFontType, const float fontSize, const wchar_t *pFont)
+void CGameEngine::DrawText(float normalTopX, float normalTopY, float normalBottomX, float normalBottomY, const wchar_t* pFontType, const wchar_t *pFont)
 {
-	m_pRenderer->DrawText(x, y, width, height, pFontType, fontSize, pFont);
+	auto fontSize = abs(normalBottomY - normalTopY);
+
+	m_pRenderer->DrawText(normalTopX, normalTopY, normalBottomX, normalBottomY, pFontType, fontSize, pFont);
 }

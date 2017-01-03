@@ -13,10 +13,11 @@ public:
 	bool Initialize(Windows::UI::Xaml::Controls::SwapChainPanel^ swapChainPanel);
 	void UpdateForWindowSizeOrScaleChanged(const Windows::Foundation::Size *pNewLogicalSize, float fCompositionScaleX, float fCompositionScaleY);
 
-	void Process() const;
+	void UpdateContents() const;
+	void Present() const;
 	void SetWorld(CGameWorld *pWorld);
 
-	void RenderFont(int x, int y, int width, int height, const wchar_t* pFontType, const float fontSize, const wchar_t *pFont);
+	void DrawText(float x, float y, float width, float height, const wchar_t* pFontType, const wchar_t *pFont);
 
 	virtual ~CGameEngine();
 

@@ -822,16 +822,19 @@ void CD3DRenderer::Draw(const IDrawable & drawableObject)
 		m_pDeviceContext->DrawIndexed(data.indexCount, data.startIndex, data.baseVertexLocation);
 	}
 }
-bool CD3DRenderer::DrawText(int dipX, int dipY, int dipWidth, int dipHeight, const wchar_t* pFontType, const float fontSize, const wchar_t *pText)
+bool CD3DRenderer::DrawText(float normalTopX, float normalTopY, float normalBottomX, float normalBottomY, const wchar_t* pFontType, const float fontSize, const wchar_t *pText)
 {
 	// 입력받은 FontType에 맞춰, IDWriteTextFormat을 만들어준다.
 	// pFont는 출력할 스트링을 가지고 있고
 	// x, y는 화면에서 출력할 위치를 지정한다.
 	assert(m_pDWriteFactory != nullptr);
 	assert(m_pD2D1RenderTarget != nullptr);
-	assert(dipX >= 0 && dipY >= 0 && dipWidth > 0 && dipHeight > 0 && pFontType != nullptr && fontSize > 0.0f && pText != nullptr);
+	assert(normalTopX >= 0 && normalTopY >= 0 && normalBottomX >= 0 && normalBottomY >= 0 && pFontType != nullptr && fontSize > 0.0f && pText != nullptr);
 
 	HRESULT hr;
+	
+	// 전체 rendering rectangular DIP 구해옴..
+	auto renderTargetSizeInDIP = m_pD2D1RenderTarget->GetSize();
 
 	// case 1 , 기존에 사용하는 포맷이 없거나
 	// case 2 , 있어도, 기존포맷의 폰트타입이과 생성하려면 폰트타입이 다르거나
@@ -845,7 +848,7 @@ bool CD3DRenderer::DrawText(int dipX, int dipY, int dipWidth, int dipHeight, con
 			DWRITE_FONT_WEIGHT_REGULAR,
 			DWRITE_FONT_STYLE_NORMAL,
 			DWRITE_FONT_STRETCH_NORMAL,
-			fontSize,
+			renderTargetSizeInDIP.height * fontSize,
 			L"en-us",
 			&m_pDWriteTextFormat);
 
@@ -864,17 +867,26 @@ bool CD3DRenderer::DrawText(int dipX, int dipY, int dipWidth, int dipHeight, con
 	}
 
 	auto textLength = wcslen(pText);
-	// 그리는 작업
-	const D2D1_RECT_F rect = { dipX, dipY, dipWidth, dipHeight };
+
+	// 실제 DIP 계산
+	const D2D1_RECT_F rect = { 
+		renderTargetSizeInDIP.width * normalTopX, 
+		renderTargetSizeInDIP.height * normalTopY,
+		renderTargetSizeInDIP.width * normalBottomX,
+		renderTargetSizeInDIP.height * normalBottomY };
 	
+	// 그리는 작업
 	m_pD2D1RenderTarget->BeginDraw();
 	m_pD2D1RenderTarget->DrawRectangle(rect, m_pD2D1SolidColorBrush.Get());
 	m_pD2D1RenderTarget->DrawText(pText, textLength, m_pDWriteTextFormat.Get(), rect, m_pD2D1SolidColorBrush.Get());
 	m_pD2D1RenderTarget->EndDraw();
-
+	
 	return true;
 }
 void CD3DRenderer::EndDraw() const
+{
+}
+void CD3DRenderer::Present() const
 {
 	assert(m_bInitialized == true);
 	UINT uiSyncInterval = 0;

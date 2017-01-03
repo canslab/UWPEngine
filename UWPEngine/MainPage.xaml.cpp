@@ -74,7 +74,7 @@ MainPage::MainPage()
 	m_pObject3 = new CGameObject();
 	bInitResult = m_pObject3->Initialize("./Assets/teapot.obj");
 	m_pObject3->SetPositionW(+50, 0, 0);
-	
+
 	if (bInitResult)
 	{
 		// Asset에서 불러오는 데 실패했다는 이야기.
@@ -112,20 +112,27 @@ MainPage::MainPage()
 
 void UWPEngine::MainPage::OnUpdate(Object ^ sender, Object ^ args)
 {
-	if (m_pEngine)
-	{
-		// Update Scene
-		m_pTimer->Tick();
-		auto totalTime = m_pTimer->GetTotalTime();
+	assert(m_pEngine != nullptr);
+	wchar_t buffer[100];
 
-		m_pObject1->SetRotation(0, totalTime, totalTime);
-		m_pObject2->SetRotation(0, 2 * totalTime, 0);
-		m_pWorld->Update(m_pObject1);
-		m_pWorld->Update(m_pObject2); 
+	// Update Scene
+	m_pTimer->Tick();
 
-		// Render
-		m_pEngine->Process();
-	}
+	auto deltaTime = m_pTimer->GetDeltaTime();
+	auto totalTime = m_pTimer->GetTotalTime();
+
+	m_pObject1->SetRotation(0, totalTime, totalTime);
+	m_pObject2->SetRotation(0, 2 * totalTime, 0);
+	m_pWorld->Update(m_pObject1);
+	m_pWorld->Update(m_pObject2);
+
+
+	// Render
+	swprintf_s(buffer, L"Demo Program FPS = %.2f", 1 / deltaTime);
+	m_pEngine->UpdateContents();
+	m_pEngine->DrawText(0, 0, 0.6, 0.05, L"Arial", buffer);
+	m_pEngine->DrawText(0, 0.95, 0.4, 1, L"Segoe UI Light", L"Score = ");
+	m_pEngine->Present();
 }
 
 void UWPEngine::MainPage::OnSwapChainPanelSizeChanged(Platform::Object ^ sender, Windows::UI::Xaml::SizeChangedEventArgs ^ e)
@@ -167,15 +174,13 @@ void UWPEngine::MainPage::OnPointerMoved(Windows::UI::Core::CoreWindow ^ coreWin
 		camera.MoveTargetPositionByOffset(0, -yDiff / 20, 0);
 
 		m_pressedPoint = nowPoint;
- 	}
+	}
 }
 
-void UWPEngine::MainPage::
-OnPointerReleased(Windows::UI::Core::CoreWindow ^ coreWindow, Windows::UI::Core::PointerEventArgs ^ args)
+void UWPEngine::MainPage::OnPointerReleased(Windows::UI::Core::CoreWindow ^ coreWindow, Windows::UI::Core::PointerEventArgs ^ args)
 {
 	m_bPressed = false;
 }
-
 
 void UWPEngine::MainPage::OnKeyDown(Windows::UI::Core::CoreWindow ^sender, Windows::UI::Core::KeyEventArgs ^args)
 {
