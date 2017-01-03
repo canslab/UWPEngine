@@ -21,7 +21,7 @@ public:
 	// drawable Object를 그린다!
 	void Draw(const IDrawable& drawableObject);
 
-	bool DrawText(float normalizedX, float normalizedY, float normalizedWidth, float normalizedHeight, const wchar_t* pFontType, const float fontSize, const wchar_t *pText);
+	bool DrawText(float normalizedX, float normalizedY, float normalizedWidth, float normalizedHeight, const wchar_t* pFontType, float normalizedFontSize, const wchar_t *pText);
 	
 	// 지금까지 드로잉한 내용을 Present한다
 	void EndDraw() const;
