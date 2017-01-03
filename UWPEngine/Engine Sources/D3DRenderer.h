@@ -21,6 +21,8 @@ public:
 	// drawable Object를 그린다!
 	void Draw(const IDrawable& drawableObject);
 
+	bool DrawText(int dipX, int dipY, int dipWidth, int dipHeight, const wchar_t* pFontType, const float fontSize, const wchar_t *pText);
+	
 	// 지금까지 드로잉한 내용을 Present한다
 	void EndDraw() const;
 
@@ -30,6 +32,8 @@ public:
 
 private:
 	bool _CreateD3D();
+	bool _CreateDWriteResources();
+	bool _ReconfigureD2D();
 	bool _CreateSwapChain(Windows::UI::Xaml::Controls::SwapChainPanel^ swapChainPanel, UINT width, UINT height);
 	void _SetCompositionScale(float fCompositionScaleX, float fCompositionScaley);
 	
@@ -44,10 +48,19 @@ private:
 	bool _CreateConstantBuffer();
 
 	void _CleanRTVandDSV();
+	void _CleanD2DDeviceDependentResources();
 
 	DirectX::XMFLOAT4X4										m_projMatrix;
 
 	bool													m_bInitialized;
+
+	Microsoft::WRL::ComPtr<IDXGISurface>					m_pDXGISurface;
+	Microsoft::WRL::ComPtr<ID2D1RenderTarget>				m_pD2D1RenderTarget;			// Direct2D Render Target
+	Microsoft::WRL::ComPtr<ID2D1SolidColorBrush>			m_pD2D1SolidColorBrush;		// Direct2D Brush
+
+	Microsoft::WRL::ComPtr<IDWriteFactory>					m_pDWriteFactory;			// DirectWrite Factory
+	Microsoft::WRL::ComPtr<IDWriteTextFormat>				m_pDWriteTextFormat;		// DirectWrite Text Format
+	std::wstring											m_pCurrentFontTypeName;
 
 	// DXGI SwapChain & XAML SwapChainPanel
 	Microsoft::WRL::ComPtr<IDXGISwapChain1>					m_pSwapChain;

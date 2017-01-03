@@ -16,6 +16,8 @@ public:
 	void Process() const;
 	void SetWorld(CGameWorld *pWorld);
 
+	void RenderFont(int x, int y, int width, int height, const wchar_t* pFontType, const float fontSize, const wchar_t *pFont);
+
 	virtual ~CGameEngine();
 
 	// Prohibite Copy, Assignment

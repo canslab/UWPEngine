@@ -60,6 +60,7 @@ void CGameEngine::Process() const
 	if (m_pGameWorld)
 	{
 		m_pRenderer->Draw(*m_pGameWorld);
+		bool bTest = m_pRenderer->DrawText(0, 0, 100, 100, L"Gabriola", 96.0f, L"Hi!");
 	}
 	m_pRenderer->EndDraw();	
 }
@@ -71,4 +72,10 @@ void CGameEngine::SetWorld(CGameWorld * pWorld)
 	m_pGameWorld = pWorld;
 
 	m_pRenderer->BeReadyForDrawableObject(*pWorld);
+	
+}
+
+void CGameEngine::RenderFont(int x, int y, int width, int height, const wchar_t* pFontType, const float fontSize, const wchar_t *pFont)
+{
+	m_pRenderer->DrawText(x, y, width, height, pFontType, fontSize, pFont);
 }
