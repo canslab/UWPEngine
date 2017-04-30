@@ -6,6 +6,9 @@
 //------------------------------------------------------------------------------
 #include "pch.h"
 
+#pragma warning(push)
+#pragma warning(disable: 4100) // unreferenced formal parameter
+
 #if defined _DEBUG && !defined DISABLE_XAML_GENERATED_BINDING_DEBUG_OUTPUT
 extern "C" __declspec(dllimport) int __stdcall IsDebuggerPresent();
 #endif
@@ -27,11 +30,11 @@ void ::UWPEngine::MainPage::Connect(int __connectionId, ::Platform::Object^ __ta
 {
     switch (__connectionId)
     {
-        case 1:
-            {
-                this->swapChainPanel = safe_cast<::Windows::UI::Xaml::Controls::SwapChainPanel^>(__target);
-            }
-            break;
+    case 1:
+        {
+            this->swapChainPanel = safe_cast<::Windows::UI::Xaml::Controls::SwapChainPanel^>(__target);
+        }
+        break;
     }
     _contentLoaded = true;
 }
@@ -42,5 +45,7 @@ void ::UWPEngine::MainPage::Connect(int __connectionId, ::Platform::Object^ __ta
     __target;               // unreferenced
     return nullptr;
 }
+
+#pragma warning(pop)
 
 

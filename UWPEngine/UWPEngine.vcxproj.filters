@@ -104,22 +104,10 @@
     <Image Include="Assets\Wide310x150Logo.scale-200.png">
       <Filter>Assets</Filter>
     </Image>
-    <Image Include="Assets\box.obj">
-      <Filter>Assets</Filter>
-    </Image>
-    <Image Include="Assets\Cube.obj">
+    <Image Include="Assets\sphere.obj">
       <Filter>Assets</Filter>
     </Image>
     <Image Include="Assets\teapot.obj">
-      <Filter>Assets</Filter>
-    </Image>
-    <Image Include="Assets\BMW.obj">
-      <Filter>Assets</Filter>
-    </Image>
-    <Image Include="Assets\arrow.obj">
-      <Filter>Assets</Filter>
-    </Image>
-    <Image Include="Assets\girl.obj">
       <Filter>Assets</Filter>
     </Image>
   </ItemGroup>

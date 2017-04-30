@@ -66,19 +66,20 @@ MainPage::MainPage()
 	{
 		// Asset에서 불러오는 데 실패했다는 이야기.
 	}
-	m_pObject2 = new CGameObject();
-	bInitResult = m_pObject2->Initialize("./Assets/BMW.obj");
-	m_pObject2->SetScale(0.2f, 0.2f, 0.2f);
-	m_pObject2->SetPositionW(-50, 0, 0);
 
-	m_pObject3 = new CGameObject();
-	bInitResult = m_pObject3->Initialize("./Assets/teapot.obj");
-	m_pObject3->SetPositionW(+50, 0, 0);
+	//m_pObject2 = new CGameObject();
+	//bInitResult = m_pObject2->Initialize("./Assets/BMW.obj");
+	//m_pObject2->SetScale(0.2f, 0.2f, 0.2f);
+	//m_pObject2->SetPositionW(-50, 0, 0);
 
-	if (bInitResult)
-	{
-		// Asset에서 불러오는 데 실패했다는 이야기.
-	}
+	//m_pObject3 = new CGameObject();
+	//bInitResult = m_pObject3->Initialize("./Assets/teapot.obj");
+	//m_pObject3->SetPositionW(+50, 0, 0);
+
+	//if (bInitResult)
+	//{
+	//	// Asset에서 불러오는 데 실패했다는 이야기.
+	//}
 
 	// 월드를 만든다
 	m_pWorld = new CGameWorld();
@@ -89,8 +90,8 @@ MainPage::MainPage()
 
 	// 월드에 오브젝트 두 개를 추가한다.
 	m_pWorld->AddObject(m_pObject1);
-	m_pWorld->AddObject(m_pObject2);
-	m_pWorld->AddObject(m_pObject3);
+	//m_pWorld->AddObject(m_pObject2);
+	//m_pWorld->AddObject(m_pObject3);
 	/*m_pWorld->AddObject(m_pObject5);*/
 
 	// 카메라 위치, 타깃, 업 벡터를 만들고, 월드 카메라에 설정한다.
@@ -122,9 +123,9 @@ void UWPEngine::MainPage::OnUpdate(Object ^ sender, Object ^ args)
 	auto totalTime = m_pTimer->GetTotalTime();
 
 	m_pObject1->SetRotation(0, totalTime, totalTime);
-	m_pObject2->SetRotation(0, 2 * totalTime, 0);
+	//m_pObject2->SetRotation(0, 2 * totalTime, 0);
 	m_pWorld->Update(m_pObject1);
-	m_pWorld->Update(m_pObject2);
+	//m_pWorld->Update(m_pObject2);
 
 
 	// Render

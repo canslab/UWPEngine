@@ -33,11 +33,11 @@ public:
 	virtual ~CD3DRenderer();
 
 private:
-	bool _CreateD3D();
+	bool _CreateDeviceAndContext();
 	bool _CreateDWriteResources();
 	bool _ReconfigureD2D();
 	bool _CreateSwapChain(Windows::UI::Xaml::Controls::SwapChainPanel^ swapChainPanel, UINT width, UINT height);
-	void _SetCompositionScale(float fCompositionScaleX, float fCompositionScaley);
+	void _SetCompositionScale(IDXGISwapChain1 *pSwapChain, float fCompositionScaleX, float fCompositionScaley);
 	
 	bool _CreateRTV_DSV_VP(UINT width, UINT height);
 	void _SetRTVandDSVtoContext(float defaultColor[]);

@@ -22,7 +22,6 @@ bool CD3DRenderer::Initialize(Windows::UI::Xaml::Controls::SwapChainPanel ^ swap
 	auto currentDisplayInformation = DisplayInformation::GetForCurrentView();
 	float dpi = currentDisplayInformation->LogicalDpi;
 
-	CoreWindow^ window = CoreWindow::GetForCurrentThread();
 	m_nativeOrientation = currentDisplayInformation->NativeOrientation;
 	m_currentOrientation = currentDisplayInformation->CurrentOrientation;
 	m_logicalSize = Windows::Foundation::Size(static_cast<float>(swapChainPanel->ActualWidth), static_cast<float>(swapChainPanel->ActualHeight));
@@ -30,20 +29,21 @@ bool CD3DRenderer::Initialize(Windows::UI::Xaml::Controls::SwapChainPanel ^ swap
 	m_compositionScaleX = swapChainPanel->CompositionScaleX;
 	m_compositionScaleY = swapChainPanel->CompositionScaleY;
 
-	// get effect width of output like below
+	// Get the physical size of the output view
 	// ex) compositionScaleX = 2, logical width = 1500 
 	//		=> outputSize width = 3000
 	m_outputSize.Width = m_logicalSize.Width * m_compositionScaleX;
 	m_outputSize.Height = m_logicalSize.Height * m_compositionScaleY;
 
-	// outputSize should be at least larger than one
+	// the physical size of the output view must be at least larger than '1'
 	m_outputSize.Width = max(m_outputSize.Width, 1);
 	m_outputSize.Height = max(m_outputSize.Height, 1);
 
-	// render target size is same as outputSize
+	// render target size is as same as outputSize's size
 	m_d3dRenderTargetSize.Width = m_outputSize.Width;
 	m_d3dRenderTargetSize.Height = m_outputSize.Height;
 
+	// actual width and height of the swap chain should be of type integer
 	UINT width = lround(m_d3dRenderTargetSize.Width);
 	UINT height = lround(m_d3dRenderTargetSize.Height);
 
@@ -54,8 +54,8 @@ bool CD3DRenderer::Initialize(Windows::UI::Xaml::Controls::SwapChainPanel ^ swap
 		return false;
 	}
 
-	// Create D3D 
-	bResult = _CreateD3D();
+	// Create D3D Device
+	bResult = _CreateDeviceAndContext();
 	if (bResult == false)
 	{
 		__debugbreak();
@@ -63,6 +63,7 @@ bool CD3DRenderer::Initialize(Windows::UI::Xaml::Controls::SwapChainPanel ^ swap
 	}
 
 	// 스왑체인을 만들고, SwapChainPanel에 바인딩한다.
+	// SwapChain을 만드는데,
 	bResult = _CreateSwapChain(swapChainPanel, width, height);
 	if (bResult == false)
 	{
@@ -105,7 +106,7 @@ bool CD3DRenderer::Initialize(Windows::UI::Xaml::Controls::SwapChainPanel ^ swap
 }
 
 // Create D3D Device
-bool CD3DRenderer::_CreateD3D()
+bool CD3DRenderer::_CreateDeviceAndContext()
 {
 	assert(m_pDevice == nullptr && m_pDeviceContext == nullptr);
 	HRESULT hr;
@@ -281,24 +282,31 @@ bool CD3DRenderer::_CreateSwapChain(Windows::UI::Xaml::Controls::SwapChainPanel 
 {
 	assert(swapChainPanel != nullptr && width >= 1 && height >= 1);
 	assert(m_pSwapChain == nullptr && m_pSwapChainPanelNative == nullptr && m_pDevice != nullptr);
+	
 	HRESULT hr;
+
+	// fill swap chain description 
 	DXGI_SWAP_CHAIN_DESC1 swapChainDesc = { 0 };
 	swapChainDesc.Height = height;
 	swapChainDesc.Width = width;
 	swapChainDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 	swapChainDesc.Stereo = false;
-	swapChainDesc.SampleDesc.Count = 1;								// Don't use multi sampling
+	swapChainDesc.SampleDesc.Count = 1;								// I won't use multi-sampling
 	swapChainDesc.SampleDesc.Quality = 0;
-	swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;	// it binds to render target output
-	swapChainDesc.BufferCount = 2;									// it should be greater than 1
-	swapChainDesc.Scaling = DXGI_SCALING_STRETCH;					// UWP app settings
-	swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL;	// Windows store app settings
+	swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;	// This swap chain buffer will be used as a render target
+	swapChainDesc.BufferCount = 2;									// >= 2
+
+	// the rest fields should be like below in order for this buffer to be used in the UWP app setting.
+	swapChainDesc.Scaling = DXGI_SCALING_STRETCH;					
+	swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL;	
 	swapChainDesc.Flags = 0;
 
+	// Smart pointer for COM interfaces.
 	ComPtr<IDXGIDevice1> pdxgiDevice = nullptr;
 	ComPtr<IDXGIAdapter> pdxgiAdapter = nullptr;
 	ComPtr<IDXGIFactory2>pdxgiFactory = nullptr;
 
+	// Query Interface to get IDXGIDevice1 interface.
 	hr = m_pDevice->QueryInterface(__uuidof(IDXGIDevice1), (void**)&pdxgiDevice);
 	if (FAILED(hr))
 	{
@@ -333,8 +341,8 @@ bool CD3DRenderer::_CreateSwapChain(Windows::UI::Xaml::Controls::SwapChainPanel 
 
 	if (swapChainPanel)
 	{
-		// if there is something that points from m_pSwapChain,
-		// it means CreateSwapChain() was already invoked. so it's abnormal case.
+		// If m_pSwapChain already points to the other object, which means CreateSwapChain() was called before.
+		// Therefore, abnormal behaviors have been occurred.
 		if (m_pSwapChain)
 		{
 #ifdef _DEBUG
@@ -345,7 +353,9 @@ bool CD3DRenderer::_CreateSwapChain(Windows::UI::Xaml::Controls::SwapChainPanel 
 			return false;
 		}
 
-		// create swap chain 
+		// Create Swap Chain using m_pDevice, swap chain descriptor
+		// The result swap chain object will be bound to m_pSwapChain
+		// this should be linked with swapChainPanel(XAML Controls)
 		hr = pdxgiFactory->CreateSwapChainForComposition(m_pDevice.Get(), &swapChainDesc, nullptr, &m_pSwapChain);
 		if (FAILED(hr))
 		{
@@ -357,9 +367,12 @@ bool CD3DRenderer::_CreateSwapChain(Windows::UI::Xaml::Controls::SwapChainPanel 
 			return false;
 		}
 
-		// map created SwapChain(m_pSwapChain) to swapChainPanel(XAML controls)
+		// reinterpret swapChainPanel as ISwapChainPanelNative
 		reinterpret_cast<IUnknown*>(swapChainPanel)->QueryInterface(__uuidof(ISwapChainPanelNative), (void**)&m_pSwapChainPanelNative);
+		
+		// Link created SwapChain(m_pSwapChain) with swapChainPanel(XAML controls)
 		hr = m_pSwapChainPanelNative->SetSwapChain(m_pSwapChain.Get());
+
 		if (FAILED(hr))
 		{
 #ifdef _DEBUG
@@ -387,7 +400,7 @@ bool CD3DRenderer::_CreateSwapChain(Windows::UI::Xaml::Controls::SwapChainPanel 
 	m_pSwapChain->SetRotation(DXGI_MODE_ROTATION_IDENTITY);
 
 	// inverse scale 필요
-	_SetCompositionScale(m_compositionScaleX, m_compositionScaleY);
+	_SetCompositionScale(m_pSwapChain.Get(), m_compositionScaleX, m_compositionScaleY);
 
 	return true;
 }
@@ -491,18 +504,18 @@ void CD3DRenderer::_SetVPToContext()
 	assert(m_vp.Width >= 1 && m_vp.Height >= 1);
 	m_pDeviceContext->RSSetViewports(1, &m_vp);
 }
-void CD3DRenderer::_SetCompositionScale(float fCompositionScaleX, float fCompositionScaleY)
+void CD3DRenderer::_SetCompositionScale(IDXGISwapChain1 *pSwapChain, float fCompositionScaleX, float fCompositionScaleY)
 {
-	assert(fCompositionScaleX > 0 && fCompositionScaleY > 0 && m_pSwapChain != nullptr);
+	assert(fCompositionScaleX > 0 && fCompositionScaleY > 0 && pSwapChain != nullptr);
 	DXGI_MATRIX_3X2_F inverseScale = { 0 };
 	float comp_scale_x = fCompositionScaleX;
 	float comp_scale_y = fCompositionScaleY;
 	inverseScale._11 = 1.0f / fCompositionScaleX;
 	inverseScale._22 = 1.0f / fCompositionScaleY;
 
-	ComPtr<IDXGISwapChain2> pSwapChain2 = nullptr;
-	m_pSwapChain->QueryInterface(__uuidof(IDXGISwapChain2), (void**)&pSwapChain2);
-	pSwapChain2->SetMatrixTransform(&inverseScale);
+	ComPtr<IDXGISwapChain2> pTempSwapChain2 = nullptr;
+	pSwapChain->QueryInterface(__uuidof(IDXGISwapChain2), (void**)&pTempSwapChain2);
+	pTempSwapChain2->SetMatrixTransform(&inverseScale);
 }
 
 bool CD3DRenderer::_CreateShaders()
@@ -756,7 +769,7 @@ bool CD3DRenderer::UpdateForWindowSizeOrScaleChanged(const Windows::Foundation::
 	DirectX::XMMATRIX p = DirectX::XMMatrixPerspectiveFovLH(0.25 * DirectX::XM_PI, ratio, 1.0f, 1000.0f);
 	DirectX::XMStoreFloat4x4(&m_projMatrix, p);
 
-	_SetCompositionScale(m_compositionScaleX, m_compositionScaleY);
+	_SetCompositionScale(m_pSwapChain.Get(),m_compositionScaleX, m_compositionScaleY);
 
 	return true;
 }
